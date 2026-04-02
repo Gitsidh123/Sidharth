@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
-# ─── Page Config ────────────────────────────────────────────────────────────
+# ─── Page Config ─────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Building Carbon Footprint Tracker",
     page_icon="🏢",
@@ -12,570 +10,623 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ─── Custom CSS ─────────────────────────────────────────────────────────────
+# ─── Custom CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background-color: #0d1117;
-    color: #e6edf3;
+:root {
+    --bg:        #080c10;
+    --bg2:       #0e1419;
+    --bg3:       #151c24;
+    --border:    #1e2a36;
+    --border2:   #2a3a4a;
+    --green:     #00d68f;
+    --amber:     #ffb347;
+    --red:       #ff5e5e;
+    --blue:      #4ea8de;
+    --purple:    #a78bfa;
+    --text:      #d4e0ec;
+    --text-dim:  #5a7a96;
+    --text-mid:  #8ba8c2;
 }
 
-h1, h2, h3 { font-family: 'Syne', sans-serif !important; }
+html, body, [class*="css"] {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg) !important;
+    color: var(--text);
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-.main-header {
-    background: linear-gradient(135deg, #0d2818 0%, #0d1117 50%, #0a1a0a 100%);
-    border: 1px solid #238636;
-    border-radius: 16px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 2rem;
+.hero {
+    background: linear-gradient(120deg, #091a12 0%, #0a141e 55%, #080c10 100%);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 2.2rem 2.8rem;
+    margin-bottom: 1.8rem;
     position: relative;
     overflow: hidden;
 }
-.main-header::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 180px; height: 180px;
-    background: radial-gradient(circle, rgba(35,134,54,0.25) 0%, transparent 70%);
-    border-radius: 50%;
+.hero::after {
+    content:''; position:absolute; top:-60px; right:-60px;
+    width:240px; height:240px;
+    background:radial-gradient(circle,rgba(0,214,143,.13) 0%,transparent 65%);
+    border-radius:50%; pointer-events:none;
 }
-.main-header h1 {
-    font-size: 2.4rem !important;
-    font-weight: 800 !important;
-    color: #3fb950 !important;
-    margin: 0 !important;
-    letter-spacing: -0.5px;
-}
-.main-header p {
-    color: #8b949e;
-    margin: 0.5rem 0 0 0;
-    font-weight: 300;
-    font-size: 1rem;
+.hero-title { font-family:'Outfit',sans-serif; font-size:2rem; font-weight:700; color:var(--green); margin:0; letter-spacing:-.5px; }
+.hero-sub { color:var(--text-mid); margin:.5rem 0 0 0; font-weight:300; font-size:.92rem; }
+.loc-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--bg3); border:1px solid var(--border2); border-radius:20px;
+    padding:3px 12px; margin-top:.9rem;
+    font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--green);
 }
 
-.section-header {
-    font-family: 'Syne', sans-serif !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    color: #3fb950 !important;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin: 1.5rem 0 1rem 0 !important;
-    padding-left: 12px;
-    border-left: 3px solid #238636;
+.sec-lbl {
+    font-family:'JetBrains Mono',monospace; font-size:.65rem; font-weight:500;
+    color:var(--text-dim); text-transform:uppercase; letter-spacing:3px;
+    margin:1.8rem 0 .9rem 0; display:flex; align-items:center; gap:10px;
+}
+.sec-lbl::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:1.1rem 1.4rem; margin-bottom:.7rem; transition:border-color .2s,box-shadow .2s; }
+.card:hover { border-color:var(--border2); box-shadow:0 0 18px rgba(0,214,143,.05); }
+.card-lbl { font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:2px; margin-bottom:.3rem; }
+.card-val { font-family:'JetBrains Mono',monospace; font-size:1.8rem; font-weight:700; color:var(--text); line-height:1.1; }
+.card-unit { font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--green); margin-top:.15rem; }
+
+.total-hero {
+    background:linear-gradient(135deg,#071510,#080c10);
+    border:1.5px solid var(--green); border-radius:18px; padding:1.8rem 2rem;
+    text-align:center; box-shadow:0 0 40px rgba(0,214,143,.07); margin:1rem 0;
+}
+.total-num { font-family:'JetBrains Mono',monospace; font-size:3rem; font-weight:700; color:var(--green); line-height:1; }
+.total-lbl { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:2.5px; margin-top:.5rem; }
+
+.ef-pill {
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--bg3); border:1px solid var(--border2); border-radius:6px;
+    padding:3px 9px; font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--amber); margin:2px;
 }
 
-.emission-card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 12px;
-    padding: 1.2rem 1.5rem;
-    margin-bottom: 0.8rem;
-    transition: border-color 0.2s;
-}
-.emission-card:hover { border-color: #3fb950; }
-.emission-card .label {
-    font-size: 0.75rem;
-    color: #8b949e;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-family: 'DM Mono', monospace;
-}
-.emission-card .value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    font-family: 'DM Mono', monospace;
-    color: #e6edf3;
-    margin: 0.2rem 0;
-}
-.emission-card .unit {
-    font-size: 0.8rem;
-    color: #3fb950;
-    font-family: 'DM Mono', monospace;
-}
+.tip { background:var(--bg2); border-left:3px solid var(--amber); border-radius:0 10px 10px 0; padding:.7rem 1rem; margin:.4rem 0; font-size:.87rem; color:var(--text); line-height:1.5; }
+.tip.danger { border-left-color:var(--red); }
+.tip.good   { border-left-color:var(--green); }
+.tip.info   { border-left-color:var(--blue); }
 
-.total-card {
-    background: linear-gradient(135deg, #0d2818, #0a1a0a);
-    border: 2px solid #3fb950;
-    border-radius: 16px;
-    padding: 1.5rem 2rem;
-    text-align: center;
+.elec-summary {
+    background:var(--bg3); border:1px solid var(--border); border-radius:10px;
+    padding:.85rem 1.2rem; margin:.5rem 0 1rem 0;
 }
-.total-card .total-value {
-    font-size: 3rem;
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    color: #3fb950;
-}
-.total-card .total-label {
-    font-size: 0.85rem;
-    color: #8b949e;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
+.elec-summary-title { font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:.4rem; }
 
-.tip-box {
-    background: #161b22;
-    border-left: 4px solid #d29922;
-    border-radius: 0 8px 8px 0;
-    padding: 0.8rem 1rem;
-    margin: 0.5rem 0;
-    color: #e6edf3;
-    font-size: 0.9rem;
+section[data-testid="stSidebar"] { background:var(--bg) !important; border-right:1px solid var(--border) !important; }
+.stTabs [data-baseweb="tab"] { font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--text-dim); }
+.stTabs [aria-selected="true"] { color:var(--green) !important; border-bottom-color:var(--green) !important; }
+[data-testid="stMetricValue"] { font-family:'JetBrains Mono',monospace !important; color:var(--green) !important; font-size:1.35rem !important; }
+[data-testid="stMetricLabel"] { color:var(--text-dim) !important; font-size:.68rem !important; text-transform:uppercase; letter-spacing:1px; }
+div[data-testid="stNumberInput"] label,
+div[data-testid="stSelectbox"] label,
+div[data-testid="stTextInput"] label,
+.stSlider label {
+    font-family:'JetBrains Mono',monospace !important;
+    font-size:.7rem !important; color:var(--text-dim) !important;
+    text-transform:uppercase; letter-spacing:1.2px;
 }
-.tip-box.good {
-    border-left-color: #3fb950;
-}
-.tip-box.warn {
-    border-left-color: #f85149;
-}
-
-.month-badge {
-    display: inline-block;
-    background: #238636;
-    color: #fff;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 500;
-}
-
-.ef-table td { font-family: 'DM Mono', monospace; font-size: 0.8rem; }
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background: #0d1117 !important;
-    border-right: 1px solid #21262d;
-}
-section[data-testid="stSidebar"] .stSelectbox label,
-section[data-testid="stSidebar"] .stNumberInput label,
-section[data-testid="stSidebar"] .stSlider label {
-    color: #8b949e !important;
-    font-size: 0.8rem !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Tabs */
-.stTabs [data-baseweb="tab"] {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.85rem;
-    color: #8b949e;
-}
-.stTabs [aria-selected="true"] {
-    color: #3fb950 !important;
-    border-bottom-color: #3fb950 !important;
-}
-
-/* Metric overrides */
-[data-testid="stMetricValue"] {
-    font-family: 'DM Mono', monospace !important;
-    color: #3fb950 !important;
-}
-[data-testid="stMetricLabel"] {
-    color: #8b949e !important;
-    font-size: 0.75rem !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+div[data-testid="stNumberInput"] input {
+    background:var(--bg3) !important; border-color:var(--border2) !important;
+    color:var(--text) !important; font-family:'JetBrains Mono',monospace !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── Emission Factors ────────────────────────────────────────────────────────
-EF = {
-    "electricity":    0.82,   # kg CO₂ / kWh  (India grid average)
-    "renewable":      0.00,   # kg CO₂ / kWh  (solar/wind)
-    "diesel":         2.68,   # kg CO₂ / litre
-    "lpg":            2.98,   # kg CO₂ / kg
-    "natural_gas":    2.03,   # kg CO₂ / m³
-    "water":          0.344,  # kg CO₂ / m³
-    "food_organic":   0.10,   # kg CO₂ / kg waste
-    "paper":          1.06,   # kg CO₂ / kg waste
-    "plastic":        6.00,   # kg CO₂ / kg waste
-    "general":        0.46,   # kg CO₂ / kg waste
+# ═══════════════════════════════════════════════════════════════════════════════
+# EMISSION FACTOR DATABASE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# India State Grid EF (kg CO₂/kWh) — CEA CO2 Baseline 2022-23
+INDIA_STATE_EF = {
+    "Andhra Pradesh": 0.863, "Arunachal Pradesh": 0.180, "Assam": 0.612,
+    "Bihar": 1.021, "Chhattisgarh": 1.102, "Goa": 0.789,
+    "Gujarat": 0.841, "Haryana": 0.956, "Himachal Pradesh": 0.136,
+    "Jharkhand": 1.089, "Karnataka": 0.641, "Kerala": 0.412,
+    "Madhya Pradesh": 0.978, "Maharashtra": 0.861, "Manipur": 0.210,
+    "Meghalaya": 0.401, "Mizoram": 0.195, "Nagaland": 0.222,
+    "Odisha": 1.045, "Punjab": 0.713, "Rajasthan": 0.897,
+    "Sikkim": 0.155, "Tamil Nadu": 0.715, "Telangana": 0.921,
+    "Tripura": 0.598, "Uttar Pradesh": 0.982, "Uttarakhand": 0.256,
+    "West Bengal": 1.031, "Delhi": 0.801, "Chandigarh": 0.713,
+    "Jammu & Kashmir": 0.421, "Ladakh": 0.310, "Puducherry": 0.715,
+    "India (National Avg)": 0.820,
+}
+
+# International Grid EF (kg CO₂/kWh) — IEA 2023
+INTL_COUNTRY_EF = {
+    "United States": 0.386, "United Kingdom": 0.233, "Germany": 0.385,
+    "France": 0.056, "Australia": 0.610, "China": 0.581,
+    "Japan": 0.432, "Canada": 0.130, "Brazil": 0.074,
+    "South Africa": 0.899, "UAE": 0.409, "Saudi Arabia": 0.726,
+    "Singapore": 0.408, "Malaysia": 0.585, "Indonesia": 0.762,
+    "Bangladesh": 0.673, "Pakistan": 0.444, "Sri Lanka": 0.635,
+    "Nepal": 0.031, "Global Average": 0.475,
+}
+
+# Fuel EF (kg CO₂/unit) — IPCC AR6 / DEFRA 2023 / BEE India
+FUEL_EF = {
+    "India": {"diesel": 2.68, "lpg": 2.98, "natural_gas": 2.03},
+    "default": {"diesel": 2.64, "lpg": 2.94, "natural_gas": 2.02},
+}
+
+# Water EF (kg CO₂/m³)
+WATER_EF_MAP = {
+    "India": 0.344, "United Kingdom": 0.344, "United States": 0.376,
+    "Australia": 0.710, "default": 0.344,
+}
+
+# Waste EF (kg CO₂/kg) — IPCC 2006 / DEFRA
+WASTE_EF = {
+    "food_organic": 0.10, "paper": 1.06, "plastic": 6.00,
+    "glass": 0.009, "general": 0.46,
 }
 
 MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
-# ─── Header ──────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="main-header">
-  <h1>🏢 Building Carbon Footprint Tracker</h1>
-  <p>Monthly operational emissions · Electricity · Fuel · Water · Waste · Renewables</p>
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+def get_grid_ef(rtype, loc):
+    return INDIA_STATE_EF.get(loc, 0.820) if rtype == "India – State" else INTL_COUNTRY_EF.get(loc, 0.475)
+
+def get_fuel_ef(rtype):
+    return FUEL_EF["India"] if rtype == "India – State" else FUEL_EF["default"]
+
+def get_water_ef(rtype, loc):
+    if rtype == "India – State":
+        return WATER_EF_MAP["India"]
+    return WATER_EF_MAP.get(loc, WATER_EF_MAP["default"])
+
+def plo(title):
+    return dict(
+        title=title, paper_bgcolor="#0e1419", plot_bgcolor="#0e1419",
+        font=dict(color="#5a7a96", family="JetBrains Mono, monospace", size=10),
+        title_font=dict(color="#d4e0ec", family="Outfit, sans-serif", size=13, weight=600),
+        legend=dict(bgcolor="#0e1419", bordercolor="#1e2a36", borderwidth=1,
+                    font=dict(color="#8ba8c2", size=9)),
+        margin=dict(l=10, r=10, t=44, b=10),
+        xaxis=dict(gridcolor="#131d27", linecolor="#1e2a36"),
+        yaxis=dict(gridcolor="#131d27", linecolor="#1e2a36"),
+    )
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SIDEBAR
+# ═══════════════════════════════════════════════════════════════════════════════
+with st.sidebar:
+    st.markdown("## ⚙️ Configuration")
+    building_name = st.text_input("Building Name", value="Tower A – Corporate HQ")
+    num_months    = st.slider("Months to Track", 1, 12, 3)
+
+    st.markdown("---")
+    st.markdown("### 📍 Location")
+    region_type = st.selectbox("Region Type", ["India – State", "International – Country"])
+
+    if region_type == "India – State":
+        state_country = st.selectbox(
+            "State / UT", sorted(INDIA_STATE_EF.keys()),
+            index=sorted(INDIA_STATE_EF.keys()).index("Tamil Nadu")
+        )
+    else:
+        state_country = st.selectbox(
+            "Country", sorted(INTL_COUNTRY_EF.keys()),
+            index=sorted(INTL_COUNTRY_EF.keys()).index("United States")
+        )
+
+    grid_ef   = get_grid_ef(region_type, state_country)
+    fuel_ef   = get_fuel_ef(region_type)
+    water_ef_ = get_water_ef(region_type, state_country)
+
+    st.markdown("---")
+    st.markdown("### 📡 Active Emission Factors")
+    st.markdown(f"""
+<div class="ef-pill">⚡ Grid {grid_ef} kg/kWh</div>
+<div class="ef-pill">🛢 Diesel {fuel_ef['diesel']} kg/L</div>
+<div class="ef-pill">🔥 LPG {fuel_ef['lpg']} kg/kg</div>
+<div class="ef-pill">💨 Gas {fuel_ef['natural_gas']} kg/m³</div>
+<div class="ef-pill">💧 Water {water_ef_} kg/m³</div>
+""", unsafe_allow_html=True)
+    st.markdown("---")
+    st.caption("India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HEADER
+# ═══════════════════════════════════════════════════════════════════════════════
+st.markdown(f"""
+<div class="hero">
+  <div class="hero-title">🏢 Building Carbon Footprint Tracker</div>
+  <div class="hero-sub">Location-calibrated emissions · HVAC / Lighting / Appliances / Elevators · Monthly analysis</div>
+  <div class="loc-badge">📍 {state_country} &nbsp;·&nbsp; Grid EF: {grid_ef} kg CO₂/kWh</div>
 </div>
 """, unsafe_allow_html=True)
 
-# ─── Sidebar – Building Info ──────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("## ⚙️ Configuration")
-    building_name = st.text_input("Building Name", value="Block A – Main Office")
-    num_months = st.slider("Months to Track", 1, 12, 3)
-    st.markdown("---")
-    st.markdown("### 📋 Emission Factors")
-    st.markdown("""
-| Source | Factor |
-|--------|--------|
-| Grid Electricity | 0.82 kg/kWh |
-| Diesel | 2.68 kg/L |
-| LPG | 2.98 kg/kg |
-| Natural Gas | 2.03 kg/m³ |
-| Water | 0.344 kg/m³ |
-| Paper Waste | 1.06 kg/kg |
-| Plastic Waste | 6.00 kg/kg |
-| Organic Waste | 0.10 kg/kg |
-| General Waste | 0.46 kg/kg |
-""")
-    st.markdown("---")
-    st.caption("Factors based on IPCC, DEFRA & India CEA guidelines.")
-
-# ─── Monthly Input Form ───────────────────────────────────────────────────────
-st.markdown('<p class="section-header">📥 Monthly Operational Data</p>', unsafe_allow_html=True)
+# ═══════════════════════════════════════════════════════════════════════════════
+# MONTHLY INPUT TABS
+# ═══════════════════════════════════════════════════════════════════════════════
+st.markdown('<div class="sec-lbl">📥 Monthly Operational Data</div>', unsafe_allow_html=True)
 
 monthly_data = []
-
 tabs = st.tabs([f"📅 {MONTHS[i]}" for i in range(num_months)])
 
 for i, tab in enumerate(tabs):
     with tab:
-        month_label = MONTHS[i]
-        st.markdown(f"#### Data for **{month_label}** – *{building_name}*")
+        m = MONTHS[i]
+        st.markdown(f"#### {m} — *{building_name}*")
 
-        c1, c2, c3 = st.columns(3)
+        # ── ELECTRICITY SUB-BREAKDOWN ─────────────────────────────────────
+        st.markdown('<div class="sec-lbl" style="margin-top:.4rem">⚡ Electricity Breakdown (kWh)</div>',
+                    unsafe_allow_html=True)
 
-        with c1:
-            st.markdown("**⚡ Electricity**")
-            elec = st.number_input(f"Grid Electricity (kWh)", min_value=0.0, value=5000.0, step=100.0, key=f"elec_{i}")
-            renew = st.number_input(f"Renewable Generation (kWh)", min_value=0.0, value=0.0, step=50.0, key=f"renew_{i}")
+        ec1, ec2, ec3, ec4 = st.columns(4)
+        hvac       = ec1.number_input("🌡️ HVAC",       min_value=0.0, value=2000.0, step=50.0, key=f"hvac_{i}")
+        lighting   = ec2.number_input("💡 Lighting",   min_value=0.0, value=800.0,  step=50.0, key=f"light_{i}")
+        appliances = ec3.number_input("🖥️ Appliances", min_value=0.0, value=1500.0, step=50.0, key=f"app_{i}")
+        elevators  = ec4.number_input("🛗 Elevators",  min_value=0.0, value=200.0,  step=25.0, key=f"elev_{i}")
 
-        with c2:
-            st.markdown("**🔥 Fuel Usage**")
-            diesel = st.number_input(f"Diesel (litres)", min_value=0.0, value=0.0, step=10.0, key=f"diesel_{i}")
-            lpg = st.number_input(f"LPG (kg)", min_value=0.0, value=0.0, step=5.0, key=f"lpg_{i}")
-            natgas = st.number_input(f"Natural Gas (m³)", min_value=0.0, value=0.0, step=5.0, key=f"natgas_{i}")
+        total_grid = hvac + lighting + appliances + elevators
 
-        with c3:
-            st.markdown("**💧 Water**")
-            water_m3 = st.number_input(f"Water Consumption (m³)", min_value=0.0, value=200.0, step=10.0, key=f"water_{i}")
-            st.markdown("**🗑️ Waste (kg)**")
-            w_organic = st.number_input(f"Organic / Food Waste (kg)", min_value=0.0, value=50.0, step=5.0, key=f"worg_{i}")
-            w_paper   = st.number_input(f"Paper / Cardboard (kg)", min_value=0.0, value=30.0, step=5.0, key=f"wpap_{i}")
-            w_plastic = st.number_input(f"Plastic (kg)", min_value=0.0, value=20.0, step=5.0, key=f"wpla_{i}")
-            w_general = st.number_input(f"General / Mixed (kg)", min_value=0.0, value=40.0, step=5.0, key=f"wgen_{i}")
+        if total_grid > 0:
+            pcts = {k: v/total_grid*100 for k, v in
+                    {"HVAC": hvac, "Lighting": lighting, "Appliances": appliances, "Elevators": elevators}.items()}
+            st.markdown(f"""<div class="elec-summary">
+              <div class="elec-summary-title">Total Grid Draw</div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:1.25rem;color:#d4e0ec;font-weight:700">{total_grid:,.0f} kWh</span>
+              &nbsp;&nbsp;
+              <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#5a7a96">
+                HVAC {pcts['HVAC']:.0f}% &nbsp;·&nbsp; Lighting {pcts['Lighting']:.0f}% &nbsp;·&nbsp; Appliances {pcts['Appliances']:.0f}% &nbsp;·&nbsp; Elevators {pcts['Elevators']:.0f}%
+              </span>
+            </div>""", unsafe_allow_html=True)
 
-        # ── Compute ──────────────────────────────────────────────────────────
-        net_elec        = max(0.0, elec - renew)
-        em_electricity  = net_elec  * EF["electricity"]
-        em_diesel       = diesel    * EF["diesel"]
-        em_lpg          = lpg       * EF["lpg"]
-        em_natgas       = natgas    * EF["natural_gas"]
-        em_fuel         = em_diesel + em_lpg + em_natgas
-        em_water        = water_m3  * EF["water"]
-        em_waste        = (w_organic * EF["food_organic"] +
-                           w_paper   * EF["paper"] +
-                           w_plastic * EF["plastic"] +
-                           w_general * EF["general"])
-        em_total        = em_electricity + em_fuel + em_water + em_waste
-        renewable_pct   = (renew / elec * 100) if elec > 0 else 0.0
+        ren_col, _ = st.columns([1, 2])
+        renew = ren_col.number_input("☀️ Renewable Generation (kWh)", min_value=0.0, value=0.0,
+                                     step=50.0, key=f"renew_{i}")
+
+        # ── FUEL ─────────────────────────────────────────────────────────
+        st.markdown('<div class="sec-lbl" style="margin-top:.6rem">🔥 Fuel Usage</div>',
+                    unsafe_allow_html=True)
+        fc1, fc2, fc3 = st.columns(3)
+        diesel = fc1.number_input("🛢 Diesel (litres)",  min_value=0.0, value=0.0, step=10.0, key=f"diesel_{i}")
+        lpg    = fc2.number_input("🔥 LPG (kg)",         min_value=0.0, value=0.0, step=5.0,  key=f"lpg_{i}")
+        natgas = fc3.number_input("💨 Natural Gas (m³)", min_value=0.0, value=0.0, step=5.0,  key=f"natgas_{i}")
+
+        # ── WATER & WASTE ────────────────────────────────────────────────
+        st.markdown('<div class="sec-lbl" style="margin-top:.6rem">💧 Water & 🗑️ Waste</div>',
+                    unsafe_allow_html=True)
+        wc1, wc2, wc3, wc4, wc5, wc6 = st.columns(6)
+        water_m3  = wc1.number_input("💧 Water (m³)",        min_value=0.0, value=200.0, step=10.0, key=f"water_{i}")
+        w_organic = wc2.number_input("🥦 Organic (kg)",      min_value=0.0, value=50.0,  step=5.0,  key=f"worg_{i}")
+        w_paper   = wc3.number_input("📄 Paper (kg)",        min_value=0.0, value=30.0,  step=5.0,  key=f"wpap_{i}")
+        w_plastic = wc4.number_input("🧴 Plastic (kg)",      min_value=0.0, value=20.0,  step=5.0,  key=f"wpla_{i}")
+        w_glass   = wc5.number_input("🫙 Glass (kg)",        min_value=0.0, value=10.0,  step=2.0,  key=f"wglass_{i}")
+        w_general = wc6.number_input("🗑️ General (kg)",      min_value=0.0, value=40.0,  step=5.0,  key=f"wgen_{i}")
+
+        # ── COMPUTE ──────────────────────────────────────────────────────
+        net_elec       = max(0.0, total_grid - renew)
+        em_hvac        = hvac       * grid_ef
+        em_lighting    = lighting   * grid_ef
+        em_appliances  = appliances * grid_ef
+        em_elevators   = elevators  * grid_ef
+        em_electricity = net_elec   * grid_ef
+        em_diesel      = diesel  * fuel_ef["diesel"]
+        em_lpg         = lpg     * fuel_ef["lpg"]
+        em_natgas      = natgas  * fuel_ef["natural_gas"]
+        em_fuel        = em_diesel + em_lpg + em_natgas
+        em_water       = water_m3 * water_ef_
+        em_waste       = (w_organic * WASTE_EF["food_organic"] +
+                          w_paper   * WASTE_EF["paper"] +
+                          w_plastic * WASTE_EF["plastic"] +
+                          w_glass   * WASTE_EF["glass"] +
+                          w_general * WASTE_EF["general"])
+        em_total       = em_electricity + em_fuel + em_water + em_waste
+        renewable_pct  = (renew / total_grid * 100) if total_grid > 0 else 0.0
 
         monthly_data.append({
-            "Month":            month_label,
-            "Grid Elec (kWh)":  elec,
-            "Renewables (kWh)": renew,
-            "Net Elec (kWh)":   net_elec,
-            "Diesel (L)":       diesel,
-            "LPG (kg)":         lpg,
-            "Nat Gas (m³)":     natgas,
-            "Water (m³)":       water_m3,
-            "Organic Waste (kg)": w_organic,
-            "Paper Waste (kg)": w_paper,
-            "Plastic Waste (kg)":w_plastic,
-            "General Waste (kg)":w_general,
-            "Elec Emission":    em_electricity,
-            "Fuel Emission":    em_fuel,
-            "Water Emission":   em_water,
-            "Waste Emission":   em_waste,
-            "Total Emission":   em_total,
-            "Renewable %":      renewable_pct,
+            "Month": m,
+            "HVAC (kWh)": hvac, "Lighting (kWh)": lighting,
+            "Appliances (kWh)": appliances, "Elevators (kWh)": elevators,
+            "Total Grid (kWh)": total_grid, "Renewables (kWh)": renew, "Net Elec (kWh)": net_elec,
+            "Diesel (L)": diesel, "LPG (kg)": lpg, "Nat Gas (m³)": natgas,
+            "Water (m³)": water_m3,
+            "Organic (kg)": w_organic, "Paper (kg)": w_paper,
+            "Plastic (kg)": w_plastic, "Glass (kg)": w_glass, "General (kg)": w_general,
+            "Em HVAC": em_hvac, "Em Lighting": em_lighting,
+            "Em Appliances": em_appliances, "Em Elevators": em_elevators,
+            "Elec Emission": em_electricity,
+            "Fuel Emission": em_fuel,
+            "Water Emission": em_water,
+            "Waste Emission": em_waste,
+            "Total Emission": em_total,
+            "Renewable %": renewable_pct,
+            "Grid EF": grid_ef,
         })
 
-# ─── Build DataFrame ──────────────────────────────────────────────────────────
 df = pd.DataFrame(monthly_data)
 
-# ─── Results ──────────────────────────────────────────────────────────────────
-st.markdown('<p class="section-header">📊 Results & Analysis</p>', unsafe_allow_html=True)
+# ═══════════════════════════════════════════════════════════════════════════════
+# RESULTS
+# ═══════════════════════════════════════════════════════════════════════════════
+st.markdown('<div class="sec-lbl">📊 Results & Analysis</div>', unsafe_allow_html=True)
 
-tab_summary, tab_breakdown, tab_charts, tab_tips = st.tabs([
-    "📋 Summary Table", "🔬 Month Detail", "📈 Charts", "💡 Recommendations"
+t1, t2, t3, t4, t5 = st.tabs([
+    "📋 Summary", "🔬 Month Detail", "⚡ Electricity", "📈 Charts", "💡 Recommendations"
 ])
 
-# ── Tab 1: Summary Table ──────────────────────────────────────────────────────
-with tab_summary:
-    st.markdown(f"#### Monthly CO₂ Emissions Summary — *{building_name}*")
+# ── SUMMARY ──────────────────────────────────────────────────────────────────
+with t1:
+    st.markdown(f"#### Monthly CO₂ Summary — *{building_name}* &nbsp;|&nbsp; 📍 {state_country}")
 
-    display_df = df[["Month","Elec Emission","Fuel Emission","Water Emission","Waste Emission","Total Emission","Renewable %"]].copy()
-    display_df.columns = ["Month","Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)","Total CO₂ (kg)","Renewable %"]
-    display_df = display_df.round(2)
+    disp = df[["Month","Elec Emission","Fuel Emission","Water Emission","Waste Emission",
+               "Total Emission","Renewable %","Grid EF"]].round(2).copy()
+    disp.columns = ["Month","Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)",
+                    "Total CO₂ (kg)","Renewable %","Grid EF (kg/kWh)"]
 
-    # Totals row
-    totals = display_df[["Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)","Total CO₂ (kg)"]].sum()
-    totals_row = pd.DataFrame([["— TOTAL —", totals["Electricity (kg)"], totals["Fuel (kg)"],
-                                 totals["Water (kg)"], totals["Waste (kg)"], totals["Total CO₂ (kg)"], "—"]],
-                              columns=display_df.columns)
-    display_df = pd.concat([display_df, totals_row], ignore_index=True)
+    tots = disp[["Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)","Total CO₂ (kg)"]].sum()
+    tr = pd.DataFrame([["─ TOTAL ─", tots["Electricity (kg)"], tots["Fuel (kg)"],
+                         tots["Water (kg)"], tots["Waste (kg)"], tots["Total CO₂ (kg)"], "─", "─"]],
+                      columns=disp.columns)
+    disp_full = pd.concat([disp, tr], ignore_index=True)
 
     st.dataframe(
-        display_df.style
+        disp_full.style
             .format({"Electricity (kg)": "{:.2f}", "Fuel (kg)": "{:.2f}",
-                     "Water (kg)": "{:.2f}", "Waste (kg)": "{:.2f}",
-                     "Total CO₂ (kg)": "{:.2f}"})
-            .background_gradient(subset=["Total CO₂ (kg)"], cmap="RdYlGn_r"),
+                     "Water (kg)": "{:.2f}", "Waste (kg)": "{:.2f}", "Total CO₂ (kg)": "{:.2f}"})
+            .background_gradient(subset=["Total CO₂ (kg)"], cmap="YlOrRd"),
         use_container_width=True,
-        height=min(400, (num_months + 3) * 38),
+        height=min(420, (num_months + 3) * 38),
     )
 
-    # KPI row
     st.markdown("---")
-    k1, k2, k3, k4 = st.columns(4)
-    total_all    = df["Total Emission"].sum()
-    avg_monthly  = df["Total Emission"].mean()
-    max_month    = df.loc[df["Total Emission"].idxmax(), "Month"]
-    avg_renew    = df["Renewable %"].mean()
+    k1, k2, k3, k4, k5 = st.columns(5)
+    k1.metric("🌍 Total CO₂", f"{df['Total Emission'].sum():,.1f} kg")
+    k2.metric("📅 Monthly Avg", f"{df['Total Emission'].mean():,.1f} kg")
+    k3.metric("📌 Peak Month", df.loc[df['Total Emission'].idxmax(), 'Month'])
+    k4.metric("☀️ Avg Renewable", f"{df['Renewable %'].mean():.1f}%")
+    k5.metric("📡 Grid EF", f"{grid_ef} kg/kWh")
 
-    k1.metric("🌍 Total CO₂ (all months)", f"{total_all:,.1f} kg")
-    k2.metric("📅 Avg Monthly Emission", f"{avg_monthly:,.1f} kg")
-    k3.metric("📌 Highest Emission Month", max_month)
-    k4.metric("☀️ Avg Renewable Share", f"{avg_renew:.1f}%")
+# ── MONTH DETAIL ─────────────────────────────────────────────────────────────
+with t2:
+    sel = st.selectbox("Select Month", df["Month"].tolist(), key="sel_month_detail")
+    row = df[df["Month"] == sel].iloc[0]
 
-# ── Tab 2: Month Detail ───────────────────────────────────────────────────────
-with tab_breakdown:
-    selected_month = st.selectbox("Select Month to Inspect", df["Month"].tolist())
-    row = df[df["Month"] == selected_month].iloc[0]
+    st.markdown(f"#### {sel} — Full Breakdown")
 
-    st.markdown(f"#### Detailed Breakdown — **{selected_month}**")
+    ca, cb, cc, cd = st.columns(4)
+    for col_, label, icon, hint in [
+        (ca, "Elec Emission",  "⚡ Electricity", f"Net {row['Net Elec (kWh)']:,.0f} kWh"),
+        (cb, "Fuel Emission",  "🔥 Fuel",         "Diesel + LPG + Gas"),
+        (cc, "Water Emission", "💧 Water",        f"{row['Water (m³)']:,.0f} m³"),
+        (cd, "Waste Emission", "🗑️ Waste",        "All categories"),
+    ]:
+        col_.markdown(f"""<div class="card">
+            <div class="card-lbl">{icon}</div>
+            <div class="card-val">{row[label]:,.1f}</div>
+            <div class="card-unit">kg CO₂ · {hint}</div>
+        </div>""", unsafe_allow_html=True)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.markdown(f"""<div class="emission-card">
-        <div class="label">⚡ Electricity</div>
-        <div class="value">{row['Elec Emission']:,.1f}</div>
-        <div class="unit">kg CO₂ &nbsp;|&nbsp; Net {row['Net Elec (kWh)']:,.0f} kWh</div>
+    st.markdown(f"""<div class="total-hero">
+        <div class="total-lbl">Total Monthly Carbon Footprint</div>
+        <div class="total-num">{row['Total Emission']:,.2f}</div>
+        <div class="total-lbl" style="color:#00d68f;margin-top:.3rem">kg CO₂ &nbsp;·&nbsp; {row['Total Emission']/1000:.3f} tCO₂</div>
     </div>""", unsafe_allow_html=True)
 
-    c2.markdown(f"""<div class="emission-card">
-        <div class="label">🔥 Fuel</div>
-        <div class="value">{row['Fuel Emission']:,.1f}</div>
-        <div class="unit">kg CO₂ &nbsp;|&nbsp; Diesel + LPG + Gas</div>
-    </div>""", unsafe_allow_html=True)
+    if row["Renewables (kWh)"] > 0:
+        saved = row["Renewables (kWh)"] * grid_ef
+        st.success(f"☀️ Renewables avoided **{saved:,.1f} kg CO₂** this month ({row['Renewable %']:.1f}% offset at {grid_ef} kg/kWh).")
 
-    c3.markdown(f"""<div class="emission-card">
-        <div class="label">💧 Water</div>
-        <div class="value">{row['Water Emission']:,.1f}</div>
-        <div class="unit">kg CO₂ &nbsp;|&nbsp; {row['Water (m³)']:,.0f} m³</div>
-    </div>""", unsafe_allow_html=True)
-
-    c4.markdown(f"""<div class="emission-card">
-        <div class="label">🗑️ Waste</div>
-        <div class="value">{row['Waste Emission']:,.1f}</div>
-        <div class="unit">kg CO₂ &nbsp;|&nbsp; All types</div>
-    </div>""", unsafe_allow_html=True)
-
-    st.markdown(f"""<div class="total-card">
-        <div class="total-label">Total Monthly Carbon Footprint</div>
-        <div class="total-value">{row['Total Emission']:,.2f} kg CO₂</div>
-        <div class="total-label" style="margin-top:0.5rem">≈ {row['Total Emission']/1000:.3f} tonnes CO₂</div>
-    </div>""", unsafe_allow_html=True)
-
-    # Renewable offset callout
-    renew_saved = row["Renewables (kWh)"] * EF["electricity"]
-    if renew_saved > 0:
-        st.success(f"☀️ Renewable generation offset **{renew_saved:,.1f} kg CO₂** this month ({row['Renewable %']:.1f}% of grid draw).")
-
-    # Sub-breakdown table
-    st.markdown("##### Component Detail")
-    detail_data = {
-        "Component": ["Grid Electricity", "Renewable Offset", "Net Electricity Emission",
-                       "Diesel", "LPG", "Natural Gas", "Water", "Organic Waste",
-                       "Paper Waste", "Plastic Waste", "General Waste"],
+    st.markdown("##### Component Ledger")
+    ledger = {
+        "Component": [
+            "HVAC", "Lighting", "Appliances", "Elevators",
+            "Renewable Offset (−)", "NET Electricity",
+            "Diesel", "LPG", "Natural Gas",
+            "Water Treatment",
+            "Organic Waste", "Paper", "Plastic", "Glass", "General Waste"
+        ],
         "Quantity": [
-            f"{row['Grid Elec (kWh)']:.1f} kWh", f"-{row['Renewables (kWh)']:.1f} kWh", f"{row['Net Elec (kWh)']:.1f} kWh",
+            f"{row['HVAC (kWh)']:.0f} kWh", f"{row['Lighting (kWh)']:.0f} kWh",
+            f"{row['Appliances (kWh)']:.0f} kWh", f"{row['Elevators (kWh)']:.0f} kWh",
+            f"−{row['Renewables (kWh)']:.0f} kWh", f"{row['Net Elec (kWh)']:.0f} kWh",
             f"{row['Diesel (L)']:.1f} L", f"{row['LPG (kg)']:.1f} kg", f"{row['Nat Gas (m³)']:.1f} m³",
             f"{row['Water (m³)']:.1f} m³",
-            f"{row['Organic Waste (kg)']:.1f} kg", f"{row['Paper Waste (kg)']:.1f} kg",
-            f"{row['Plastic Waste (kg)']:.1f} kg", f"{row['General Waste (kg)']:.1f} kg",
+            f"{row['Organic (kg)']:.1f} kg", f"{row['Paper (kg)']:.1f} kg",
+            f"{row['Plastic (kg)']:.1f} kg", f"{row['Glass (kg)']:.1f} kg", f"{row['General (kg)']:.1f} kg",
+        ],
+        "EF Used": [
+            grid_ef, grid_ef, grid_ef, grid_ef, f"−{grid_ef}", grid_ef,
+            fuel_ef['diesel'], fuel_ef['lpg'], fuel_ef['natural_gas'],
+            water_ef_,
+            WASTE_EF['food_organic'], WASTE_EF['paper'], WASTE_EF['plastic'],
+            WASTE_EF['glass'], WASTE_EF['general'],
         ],
         "Emission (kg CO₂)": [
-            row['Grid Elec (kWh)'] * EF['electricity'],
-            -row['Renewables (kWh)'] * EF['electricity'],
-            row['Elec Emission'],
-            row['Diesel (L)'] * EF['diesel'],
-            row['LPG (kg)'] * EF['lpg'],
-            row['Nat Gas (m³)'] * EF['natural_gas'],
+            row['Em HVAC'], row['Em Lighting'], row['Em Appliances'], row['Em Elevators'],
+            -row['Renewables (kWh)'] * grid_ef, row['Elec Emission'],
+            row['Diesel (L)'] * fuel_ef['diesel'],
+            row['LPG (kg)'] * fuel_ef['lpg'],
+            row['Nat Gas (m³)'] * fuel_ef['natural_gas'],
             row['Water Emission'],
-            row['Organic Waste (kg)'] * EF['food_organic'],
-            row['Paper Waste (kg)'] * EF['paper'],
-            row['Plastic Waste (kg)'] * EF['plastic'],
-            row['General Waste (kg)'] * EF['general'],
+            row['Organic (kg)'] * WASTE_EF['food_organic'],
+            row['Paper (kg)'] * WASTE_EF['paper'],
+            row['Plastic (kg)'] * WASTE_EF['plastic'],
+            row['Glass (kg)'] * WASTE_EF['glass'],
+            row['General (kg)'] * WASTE_EF['general'],
         ]
     }
-    detail_df = pd.DataFrame(detail_data)
-    detail_df["Emission (kg CO₂)"] = detail_df["Emission (kg CO₂)"].round(2)
-    st.dataframe(detail_df, use_container_width=True, hide_index=True)
+    ldf = pd.DataFrame(ledger)
+    ldf["Emission (kg CO₂)"] = ldf["Emission (kg CO₂)"].round(3)
+    st.dataframe(ldf, use_container_width=True, hide_index=True)
 
-# ── Tab 3: Charts ─────────────────────────────────────────────────────────────
-with tab_charts:
-    chart_col1, chart_col2 = st.columns(2)
+# ── ELECTRICITY BREAKDOWN ─────────────────────────────────────────────────────
+with t3:
+    st.markdown("#### ⚡ Electricity Sub-Category Analysis")
 
-    with chart_col1:
-        # Stacked bar – emission by category per month
+    ec1, ec2 = st.columns(2)
+    with ec1:
+        fig_e1 = go.Figure()
+        for col_, clr, lbl in [
+            ("Em HVAC","#4ea8de","HVAC"), ("Em Lighting","#ffb347","Lighting"),
+            ("Em Appliances","#a78bfa","Appliances"), ("Em Elevators","#00d68f","Elevators")
+        ]:
+            fig_e1.add_trace(go.Bar(name=lbl, x=df["Month"], y=df[col_],
+                                    marker_color=clr, marker_line_width=0))
+        fig_e1.update_layout(**plo("Electricity Emissions by Sub-Category (kg CO₂)"),
+                              barmode="stack", yaxis_title="kg CO₂")
+        st.plotly_chart(fig_e1, use_container_width=True)
+
+    with ec2:
+        avg_kwh = [df["HVAC (kWh)"].mean(), df["Lighting (kWh)"].mean(),
+                   df["Appliances (kWh)"].mean(), df["Elevators (kWh)"].mean()]
+        fig_e2 = go.Figure(go.Pie(
+            labels=["HVAC","Lighting","Appliances","Elevators"], values=avg_kwh, hole=0.58,
+            marker=dict(colors=["#4ea8de","#ffb347","#a78bfa","#00d68f"],
+                        line=dict(color="#0e1419", width=2)),
+            textfont=dict(family="JetBrains Mono", color="#d4e0ec", size=10),
+        ))
+        fig_e2.update_layout(**plo("Avg kWh Consumption Share"))
+        st.plotly_chart(fig_e2, use_container_width=True)
+
+    elec_tbl = df[["Month","HVAC (kWh)","Lighting (kWh)","Appliances (kWh)","Elevators (kWh)",
+                    "Total Grid (kWh)","Renewables (kWh)","Net Elec (kWh)","Elec Emission","Renewable %"]].round(2).copy()
+    elec_tbl.columns = ["Month","HVAC","Lighting","Appliances","Elevators",
+                         "Total Grid","Renewables","Net kWh","Net Emission (kg CO₂)","Renewable %"]
+    st.dataframe(elec_tbl, use_container_width=True, hide_index=True)
+
+    avg_hvac_pct = (df["HVAC (kWh)"].mean() / df["Total Grid (kWh)"].mean() * 100) if df["Total Grid (kWh)"].mean() > 0 else 0
+    if avg_hvac_pct > 45:
+        st.markdown(f"""<div class="tip danger" style="margin-top:.8rem">
+            🌡️ <b>HVAC is consuming {avg_hvac_pct:.0f}% of total electricity</b> — above recommended 35-40%.
+            Audit chiller performance, implement BMS setback schedules, and review building insulation.
+        </div>""", unsafe_allow_html=True)
+
+# ── CHARTS ────────────────────────────────────────────────────────────────────
+with t4:
+    ch1, ch2 = st.columns(2)
+
+    with ch1:
         fig1 = go.Figure()
-        colors = {"Elec Emission":"#3fb950","Fuel Emission":"#f0883e","Water Emission":"#58a6ff","Waste Emission":"#bc8cff"}
-        labels = {"Elec Emission":"Electricity","Fuel Emission":"Fuel","Water Emission":"Water","Waste Emission":"Waste"}
-        for col, color in colors.items():
-            fig1.add_trace(go.Bar(
-                name=labels[col], x=df["Month"], y=df[col],
-                marker_color=color, marker_line_width=0,
-            ))
-        fig1.update_layout(
-            barmode="stack", title="Monthly Emissions by Category",
-            paper_bgcolor="#161b22", plot_bgcolor="#161b22",
-            font=dict(color="#8b949e", family="DM Mono"),
-            title_font=dict(color="#e6edf3", family="Syne", size=15),
-            legend=dict(bgcolor="#0d1117", bordercolor="#30363d", borderwidth=1),
-            yaxis_title="kg CO₂", xaxis_title="Month",
-            margin=dict(l=10, r=10, t=50, b=10),
-        )
+        for col_, clr, lbl in [
+            ("Elec Emission","#00d68f","Electricity"),
+            ("Fuel Emission","#ffb347","Fuel"),
+            ("Water Emission","#4ea8de","Water"),
+            ("Waste Emission","#a78bfa","Waste"),
+        ]:
+            fig1.add_trace(go.Bar(name=lbl, x=df["Month"], y=df[col_],
+                                  marker_color=clr, marker_line_width=0))
+        fig1.update_layout(**plo("Monthly CO₂ by Category (kg)"),
+                           barmode="stack", yaxis_title="kg CO₂")
         st.plotly_chart(fig1, use_container_width=True)
 
-    with chart_col2:
-        # Donut – average category share
+    with ch2:
         avg_vals = [df["Elec Emission"].mean(), df["Fuel Emission"].mean(),
                     df["Water Emission"].mean(), df["Waste Emission"].mean()]
         fig2 = go.Figure(go.Pie(
-            labels=["Electricity","Fuel","Water","Waste"],
-            values=avg_vals,
-            hole=0.55,
-            marker=dict(colors=["#3fb950","#f0883e","#58a6ff","#bc8cff"],
-                        line=dict(color="#161b22", width=2)),
-            textfont=dict(family="DM Mono", color="#e6edf3"),
+            labels=["Electricity","Fuel","Water","Waste"], values=avg_vals, hole=0.58,
+            marker=dict(colors=["#00d68f","#ffb347","#4ea8de","#a78bfa"],
+                        line=dict(color="#0e1419", width=2)),
+            textfont=dict(family="JetBrains Mono", color="#d4e0ec", size=10),
         ))
-        fig2.update_layout(
-            title="Avg Emission Share (All Months)",
-            paper_bgcolor="#161b22",
-            font=dict(color="#8b949e", family="DM Mono"),
-            title_font=dict(color="#e6edf3", family="Syne", size=15),
-            legend=dict(bgcolor="#0d1117", bordercolor="#30363d", borderwidth=1),
-            margin=dict(l=10, r=10, t=50, b=10),
-        )
+        fig2.update_layout(**plo("Avg Emission Share Across Months"))
         st.plotly_chart(fig2, use_container_width=True)
 
-    # Total emission trend line
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(
-        x=df["Month"], y=df["Total Emission"],
-        mode="lines+markers",
-        line=dict(color="#3fb950", width=3),
-        marker=dict(size=8, color="#3fb950", line=dict(color="#0d1117", width=2)),
-        fill="tozeroy", fillcolor="rgba(63,185,80,0.08)",
-        name="Total CO₂"
+        x=df["Month"], y=df["Total Emission"], mode="lines+markers",
+        line=dict(color="#00d68f", width=2.5),
+        marker=dict(size=7, color="#00d68f", line=dict(color="#080c10", width=2)),
+        fill="tozeroy", fillcolor="rgba(0,214,143,.07)", name="Total CO₂"
     ))
-    fig3.update_layout(
-        title="Total Monthly CO₂ Trend",
-        paper_bgcolor="#161b22", plot_bgcolor="#161b22",
-        font=dict(color="#8b949e", family="DM Mono"),
-        title_font=dict(color="#e6edf3", family="Syne", size=15),
-        yaxis_title="kg CO₂", xaxis_title="Month",
-        margin=dict(l=10, r=10, t=50, b=10),
-        xaxis=dict(showgrid=False),
-        yaxis=dict(gridcolor="#21262d"),
-    )
+    fig3.update_layout(**plo("Total Monthly CO₂ Trend (kg)"), yaxis_title="kg CO₂")
     st.plotly_chart(fig3, use_container_width=True)
 
     if df["Renewables (kWh)"].sum() > 0:
         fig4 = go.Figure()
-        fig4.add_trace(go.Bar(x=df["Month"], y=df["Grid Elec (kWh)"], name="Grid Draw", marker_color="#f85149"))
-        fig4.add_trace(go.Bar(x=df["Month"], y=df["Renewables (kWh)"], name="Renewable Gen", marker_color="#3fb950"))
-        fig4.update_layout(
-            barmode="group", title="Grid Electricity vs Renewable Generation",
-            paper_bgcolor="#161b22", plot_bgcolor="#161b22",
-            font=dict(color="#8b949e", family="DM Mono"),
-            title_font=dict(color="#e6edf3", family="Syne", size=15),
-            legend=dict(bgcolor="#0d1117", bordercolor="#30363d", borderwidth=1),
-            yaxis_title="kWh", xaxis_title="Month",
-            margin=dict(l=10, r=10, t=50, b=10),
-            yaxis=dict(gridcolor="#21262d"),
-        )
+        fig4.add_trace(go.Bar(x=df["Month"], y=df["Total Grid (kWh)"], name="Grid Draw", marker_color="#ff5e5e"))
+        fig4.add_trace(go.Bar(x=df["Month"], y=df["Renewables (kWh)"], name="Renewable Gen", marker_color="#00d68f"))
+        fig4.update_layout(**plo("Grid Draw vs Renewable Generation (kWh)"),
+                           barmode="group", yaxis_title="kWh")
         st.plotly_chart(fig4, use_container_width=True)
 
-# ── Tab 4: Recommendations ────────────────────────────────────────────────────
-with tab_tips:
-    st.markdown("#### 💡 Smart Recommendations Based on Your Data")
-
-    high_elec   = df[df["Elec Emission"] > df["Elec Emission"].mean() * 1.1]
-    high_fuel   = df[df["Fuel Emission"] > 50]
-    high_waste  = df[df["Waste Emission"] > df["Waste Emission"].mean() * 1.1]
-    low_renew   = df["Renewable %"].mean() < 10
-
+# ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
+with t5:
+    st.markdown(f"#### 💡 Location-Aware Recommendations — {state_country}")
     any_tip = False
 
-    if not high_elec.empty:
+    if grid_ef > 0.85:
         any_tip = True
-        months_str = ", ".join(high_elec["Month"].tolist())
-        st.markdown(f"""<div class="tip-box warn">
-            ⚡ <b>High electricity emissions</b> in {months_str}. 
-            Consider LED retrofits, HVAC scheduling, and BMS (Building Management Systems) to cut grid draw.
+        st.markdown(f"""<div class="tip danger">
+            📡 <b>High grid emission factor ({grid_ef} kg/kWh)</b> for {state_country}.
+            This is among the most carbon-intensive grids. Prioritise on-site solar, RECs
+            (Renewable Energy Certificates) or a green PPA to neutralise grid impact immediately.
         </div>""", unsafe_allow_html=True)
 
-    if not high_fuel.empty:
+    avg_hvac_pct = (df["Em HVAC"].sum() / df["Elec Emission"].sum() * 100) if df["Elec Emission"].sum() > 0 else 0
+    if avg_hvac_pct > 45:
         any_tip = True
-        months_str = ", ".join(high_fuel["Month"].tolist())
-        st.markdown(f"""<div class="tip-box warn">
-            🔥 <b>Significant fuel usage</b> in {months_str}. 
-            Evaluate switching diesel generators to grid or solar+battery backup; audit LPG boiler efficiency.
+        st.markdown(f"""<div class="tip danger">
+            🌡️ <b>HVAC is {avg_hvac_pct:.0f}% of electricity emissions</b>.
+            Upgrade to inverter-class chillers (COP ≥ 5.0), deploy BMS setback schedules,
+            and improve building envelope insulation to cut cooling load by 20–35%.
         </div>""", unsafe_allow_html=True)
 
-    if not high_waste.empty:
+    avg_light_pct = (df["Em Lighting"].sum() / df["Elec Emission"].sum() * 100) if df["Elec Emission"].sum() > 0 else 0
+    if avg_light_pct > 20:
         any_tip = True
-        months_str = ", ".join(high_waste["Month"].tolist())
-        st.markdown(f"""<div class="tip-box">
-            🗑️ <b>Above-average waste emissions</b> in {months_str}. 
-            Implement source-segregation, composting for organic waste, and plastic reduction initiatives.
+        st.markdown(f"""<div class="tip">
+            💡 <b>Lighting is {avg_light_pct:.0f}% of electricity emissions</b>.
+            Full LED retrofit + daylight sensors + occupancy-based controls can reduce lighting energy by 40–60%.
         </div>""", unsafe_allow_html=True)
 
-    if low_renew:
+    if df["Renewable %"].mean() < 10:
         any_tip = True
-        st.markdown(f"""<div class="tip-box">
-            ☀️ <b>Low renewable generation ({df["Renewable %"].mean():.1f}% avg)</b>. 
-            Rooftop solar or a Power Purchase Agreement (PPA) could offset significant grid emissions.
+        st.markdown(f"""<div class="tip info">
+            ☀️ <b>Renewable offset averages only {df['Renewable %'].mean():.1f}%</b>.
+            At {state_country}'s {grid_ef} kg/kWh grid EF, each 1,000 kWh of solar avoids
+            {grid_ef*1000:.0f} kg CO₂. A 50 kWp rooftop system typically generates 5,500–6,500 kWh/month.
         </div>""", unsafe_allow_html=True)
 
-    if df["Water Emission"].mean() > 100:
+    if df["Fuel Emission"].mean() > 100:
         any_tip = True
-        st.markdown(f"""<div class="tip-box">
-            💧 <b>High water-related emissions</b>. 
-            Rainwater harvesting and water recycling systems can reduce both consumption and associated emissions.
+        st.markdown(f"""<div class="tip">
+            🔥 <b>Fuel emissions average {df['Fuel Emission'].mean():,.0f} kg CO₂/month</b>.
+            Replace diesel gensets with grid-tied UPS + lithium battery backup.
+            LPG boilers can often be replaced with heat-pump technology for 60–70% emission reduction.
+        </div>""", unsafe_allow_html=True)
+
+    if df["Plastic (kg)"].mean() > 15:
+        any_tip = True
+        st.markdown(f"""<div class="tip">
+            🧴 <b>Plastic waste averages {df['Plastic (kg)'].mean():.0f} kg/month</b>
+            (EF: 6.0 kg CO₂/kg — highest of all waste types).
+            Implement source segregation, vendor take-back schemes, and reduce single-use plastics.
         </div>""", unsafe_allow_html=True)
 
     if not any_tip:
-        st.markdown(f"""<div class="tip-box good">
-            🎉 <b>Your building is performing well!</b> Emissions are within reasonable ranges. 
-            Continue monitoring monthly and target incremental reductions each quarter.
+        st.markdown(f"""<div class="tip good">
+            🎉 <b>Building performance looks solid for {state_country}</b>.
+            All emission categories are within healthy ranges. Target 5–10% annual reduction
+            through quarterly energy audits and ISO 50001 Energy Management practices.
         </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("##### 🏆 Emission Intensity Benchmarks")
-    intensity = df["Total Emission"].mean()
-    bench_col1, bench_col2, bench_col3 = st.columns(3)
-    bench_col1.metric("Your Avg Monthly CO₂", f"{intensity:,.1f} kg")
-    bench_col2.metric("Typical Office (ASHRAE ref)", "~2,000 kg/floor")
-    bench_col3.metric("Net-Zero Target", "< 500 kg/floor")
+    b1, b2, b3, b4 = st.columns(4)
+    b1.metric("Your Avg Monthly", f"{df['Total Emission'].mean():,.0f} kg")
+    b2.metric("IGBC Green Rating", "< 1,800 kg/floor")
+    b3.metric("LEED Gold Reference", "< 1,200 kg/floor")
+    b4.metric("Net-Zero Target", "< 500 kg/floor")
 
 # ─── Footer ───────────────────────────────────────────────────────────────────
 st.divider()
 st.caption(
-    "🌱 Building Carbon Footprint Tracker · "
-    "Emission factors: IPCC AR6, DEFRA 2023, India CEA 2022-23 · "
-    "For professional carbon accounting, consult a certified auditor."
+    f"🌱 Building Carbon Tracker · 📍 {state_country} · Grid EF: {grid_ef} kg CO₂/kWh · "
+    "Sources: India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India · PPAC · GHG Protocol"
 )
