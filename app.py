@@ -1259,3 +1259,86 @@ st.caption(
     "Sources: India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India · PPAC · "
     f"Session: {st.session_state.current_user}"
 )
+st.markdown("### 📊 Normalization & Assumptions")
+
+floor_area = st.number_input("Building Floor Area (m²)", min_value=1.0, value=1000.0, step=50.0)
+occupants  = st.number_input("Number of Occupants", min_value=1, value=100, step=5)
+
+st.markdown("#### ⚠️ Uncertainty Settings")
+
+uncertainty_level = st.selectbox(
+    "Data Quality Level",
+    ["High Accuracy (±5%)", "Moderate Accuracy (±10%)", "Low Accuracy (±20%)"]
+)
+
+UNCERTAINTY_MAP = {
+    "High Accuracy (±5%)": 0.05,
+    "Moderate Accuracy (±10%)": 0.10,
+    "Low Accuracy (±20%)": 0.20
+}
+
+uncertainty_factor = UNCERTAINTY_MAP[uncertainty_level]
+
+
+co2_per_m2 = em_total / floor_area if floor_area > 0 else 0
+co2_per_occupant = em_total / occupants if occupants > 0 else 0
+
+lower_bound = em_total * (1 - uncertainty_factor)
+upper_bound = em_total * (1 + uncertainty_factor)
+
+monthly_data.append({
+    "CO2 per m2": co2_per_m2,
+    "CO2 per occupant": co2_per_occupant,
+    "Emission Lower Bound": lower_bound,
+    "Emission Upper Bound": upper_bound,
+    "Uncertainty %": uncertainty_factor * 100,
+})
+
+
+st.markdown("### 📊 Normalized Performance Metrics")
+
+n1, n2 = st.columns(2)
+
+n1.metric(
+    "🏢 CO₂ per m²",
+    f"{(df['Total Emission'].sum() / floor_area):.2f} kg/m²"
+)
+
+n2.metric(
+    "👥 CO₂ per Occupant",
+    f"{(df['Total Emission'].sum() / occupants):.2f} kg/person"
+)
+
+
+st.markdown("### 📉 Uncertainty Analysis")
+
+total_em = df["Total Emission"].sum()
+low = total_em * (1 - uncertainty_factor)
+high = total_em * (1 + uncertainty_factor)
+
+st.markdown(f"""
+<div class="card">
+  <div class="card-lbl">UNCERTAINTY RANGE</div>
+  <div class="card-val">{low:,.1f} – {high:,.1f}</div>
+  <div class="card-unit">kg CO₂e (±{uncertainty_factor*100:.0f}%)</div>
+</div>
+""", unsafe_allow_html=True)
+
+
+st.markdown("### 🧠 Key Assumptions")
+
+st.markdown(f"""
+<div class="tip info">
+• Grid emission factor assumed constant at <b>{grid_ef} kg CO₂/kWh</b><br>
+• Water energy intensity based on regional averages<br>
+• Waste factors from IPCC / DEFRA datasets<br>
+• Fuel combustion assumed complete<br>
+• Occupancy fixed at <b>{occupants}</b><br>
+• Floor area fixed at <b>{floor_area} m²</b><br>
+• Uniform uncertainty applied: ±{uncertainty_factor*100:.0f}%
+</div>
+""", unsafe_allow_html=True)
+
+
+disp["CO₂ per m²"] = (disp["Total CO₂ (kg)"] / floor_area).round(2)
+disp["CO₂ per occupant"] = (disp["Total CO₂ (kg)"] / occupants).round(2)
