@@ -1433,10 +1433,18 @@ with t4:
             marker=dict(size=7), yaxis="y2"
         ))
         fig_td.update_layout(
-            **plo(f"T&D Loss kWh & Emission Uplift — {td_loss_rate*100:.1f}% loss rate"),
-            yaxis=dict(title="kWh lost in T&D", gridcolor="#111820"),
-            yaxis2=dict(title="kg CO₂e uplift", overlaying="y", side="right"),
-        )
+    title=f"T&D Loss kWh & Emission Uplift — {td_loss_rate*100:.1f}% loss rate",
+    paper_bgcolor="#0b1118",
+    plot_bgcolor="#0b1118",
+    font=dict(color="#4a6a88", family="JetBrains Mono, monospace", size=10),
+    title_font=dict(color="#c8daea", family="Outfit, sans-serif", size=13, weight=600),
+    legend=dict(bgcolor="#0b1118", bordercolor="#1a2535", borderwidth=1,
+                font=dict(color="#7a9ab8", size=9)),
+    margin=dict(l=10, r=10, t=44, b=10),
+    yaxis=dict(title="kWh lost in T&D", gridcolor="#111820", linecolor="#1a2535"),
+    yaxis2=dict(title="kg CO₂e uplift", overlaying="y", side="right",
+                gridcolor="#111820", linecolor="#1a2535"),
+)
         st.plotly_chart(fig_td, use_container_width=True)
 
     with td2:
