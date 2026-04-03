@@ -1398,11 +1398,18 @@ with t3:
             name="Occupancy %", yaxis="y2"
         ))
         fig_e2.update_layout(
-            **plo("Seasonal HVAC Multiplier vs Occupancy Rate"),
-            yaxis=dict(title="HVAC Mult", gridcolor="#111820", linecolor="#1a2535"),
-            yaxis2=dict(title="Occupancy %", overlaying="y", side="right",
-                        gridcolor="#111820", linecolor="#1a2535"),
-        )
+    title="Seasonal HVAC Multiplier vs Occupancy Rate",
+    paper_bgcolor="#0b1118",
+    plot_bgcolor="#0b1118",
+    font=dict(color="#4a6a88", family="JetBrains Mono, monospace", size=10),
+    title_font=dict(color="#c8daea", family="Outfit, sans-serif", size=13, weight=600),
+    legend=dict(bgcolor="#0b1118", bordercolor="#1a2535", borderwidth=1,
+                font=dict(color="#7a9ab8", size=9)),
+    margin=dict(l=10, r=10, t=44, b=10),
+    yaxis=dict(title="HVAC Mult", gridcolor="#111820", linecolor="#1a2535"),
+    yaxis2=dict(title="Occupancy %", overlaying="y", side="right",
+                gridcolor="#111820", linecolor="#1a2535"),
+)
         st.plotly_chart(fig_e2, use_container_width=True)
 
     elec_tbl = df[["Month","HVAC (kWh)","Lighting (kWh)","Appliances (kWh)","Elevators (kWh)",
