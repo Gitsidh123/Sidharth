@@ -3,6 +3,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import json
+import hashlib
+import os
+import re
+from datetime import datetime
 
 # ─── Page Config ─────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -11,6 +16,65 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTH SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+USERS_FILE = "users_db.json"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def validate_password_strength(password):
+    """Returns (is_valid, message)"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r"[0-9]", password):
+        return False, "Password must contain at least one number."
+    return True, "Strong password ✓"
+
+def register_user(user_id, password, full_name, email):
+    users = load_users()
+    if user_id in users:
+        return False, "User ID already exists. Please choose another."
+    if not user_id or len(user_id) < 3:
+        return False, "User ID must be at least 3 characters."
+    if not re.match(r"^[a-zA-Z0-9_]+$", user_id):
+        return False, "User ID can only contain letters, numbers, and underscores."
+    valid, msg = validate_password_strength(password)
+    if not valid:
+        return False, msg
+    if not email or "@" not in email:
+        return False, "Please enter a valid email address."
+    users[user_id] = {
+        "password": hash_password(password),
+        "full_name": full_name,
+        "email": email,
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+    save_users(users)
+    return True, "Account created successfully!"
+
+def login_user(user_id, password):
+    users = load_users()
+    if user_id not in users:
+        return False, None, "User ID not found."
+    if users[user_id]["password"] != hash_password(password):
+        return False, None, "Incorrect password."
+    return True, users[user_id], "Login successful!"
 
 # ─── Custom CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
@@ -50,6 +114,53 @@ html, body, [class*="css"] {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ── AUTH PANEL ── */
+.auth-wrapper {
+    max-width: 460px;
+    margin: 4rem auto;
+}
+.auth-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 2.4rem 2.8rem;
+    position: relative;
+    overflow: hidden;
+}
+.auth-card::before {
+    content:''; position:absolute; top:-80px; right:-80px;
+    width:260px; height:260px;
+    background:radial-gradient(circle,rgba(0,229,160,.07) 0%,transparent 65%);
+    border-radius:50%; pointer-events:none;
+}
+.auth-logo {
+    font-size: 2.4rem;
+    text-align: center;
+    margin-bottom: .5rem;
+}
+.auth-title {
+    font-family:'Outfit',sans-serif; font-size: 1.55rem; font-weight: 700;
+    color: #e8f4ff; text-align: center; margin-bottom: .25rem;
+}
+.auth-sub {
+    font-family:'JetBrains Mono',monospace; font-size: .65rem;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;
+    text-align: center; margin-bottom: 1.8rem;
+}
+.auth-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 1.2rem 0; font-family:'JetBrains Mono',monospace;
+    font-size: .62rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px;
+}
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+.user-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,160,.08); border: 1px solid rgba(0,229,160,.25);
+    border-radius: 30px; padding: 5px 14px;
+    font-family:'JetBrains Mono',monospace; font-size: .7rem; color: var(--green);
+}
 
 /* ── HERO ── */
 .hero {
@@ -243,14 +354,141 @@ div[data-testid="stNumberInput"] input {
 
 /* ── DIVIDER ── */
 hr { border-color:var(--border) !important; margin:1.5rem 0 !important; }
+
+/* ── AUTH BUTTON TWEAKS ── */
+div[data-testid="stButton"] > button {
+    font-family:'JetBrains Mono',monospace !important;
+    font-size:.72rem !important; letter-spacing:1px;
+    border-radius:10px !important;
+}
 </style>
 """, unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SESSION STATE INIT
+# ═══════════════════════════════════════════════════════════════════════════════
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
+if "user_info" not in st.session_state:
+    st.session_state.user_info = None
+if "auth_tab" not in st.session_state:
+    st.session_state.auth_tab = "login"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTH SCREEN  (shown when not logged in)
+# ═══════════════════════════════════════════════════════════════════════════════
+if not st.session_state.authenticated:
+
+    # Center the auth card
+    _, mid, _ = st.columns([1, 1.6, 1])
+    with mid:
+        st.markdown("""
+        <div class="auth-card">
+          <div class="auth-logo">🏢</div>
+          <div class="auth-title">Carbon Footprint Tracker</div>
+          <div class="auth-sub">Secure Access Portal</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        auth_tab = st.radio(
+            "Auth Mode",
+            ["🔐 Sign In", "🆕 Create Account"],
+            horizontal=True,
+            label_visibility="collapsed",
+        )
+
+        st.markdown("---")
+
+        # ── LOGIN ──────────────────────────────────────────────────────────
+        if auth_tab == "🔐 Sign In":
+            st.markdown("##### Sign in to your account")
+            login_id = st.text_input("User ID", placeholder="Enter your user ID", key="login_id")
+            login_pw = st.text_input("Password", type="password", placeholder="Enter your password", key="login_pw")
+
+            col_a, col_b = st.columns([2, 1])
+            with col_a:
+                if st.button("🔓 Sign In", use_container_width=True, type="primary"):
+                    if not login_id or not login_pw:
+                        st.error("Please enter both User ID and password.")
+                    else:
+                        ok, info, msg = login_user(login_id.strip(), login_pw)
+                        if ok:
+                            st.session_state.authenticated = True
+                            st.session_state.current_user = login_id.strip()
+                            st.session_state.user_info = info
+                            st.success(f"Welcome back, {info['full_name']}! 🎉")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ {msg}")
+            with col_b:
+                if st.button("Clear", use_container_width=True):
+                    st.rerun()
+
+            st.markdown("""
+            <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #1a2535;
+                        font-family:'JetBrains Mono',monospace;font-size:.63rem;
+                        color:#4a6a88;text-align:center">
+              Don't have an account? Switch to <b style="color:#00e5a0">Create Account</b> above.
+            </div>
+            """, unsafe_allow_html=True)
+
+        # ── REGISTER ──────────────────────────────────────────────────────
+        else:
+            st.markdown("##### Create a new account")
+
+            r_name  = st.text_input("Full Name", placeholder="Your full name", key="r_name")
+            r_email = st.text_input("Email Address", placeholder="name@company.com", key="r_email")
+            r_id    = st.text_input("Choose a User ID", placeholder="letters, numbers, underscores (min 3 chars)", key="r_id")
+
+            r_pw1 = st.text_input("Password", type="password",
+                                   placeholder="Min 8 chars · 1 uppercase · 1 number", key="r_pw1")
+            r_pw2 = st.text_input("Confirm Password", type="password",
+                                   placeholder="Re-enter your password", key="r_pw2")
+
+            # Live password strength feedback
+            if r_pw1:
+                valid_pw, pw_msg = validate_password_strength(r_pw1)
+                if valid_pw:
+                    st.markdown(f"<span style='font-family:JetBrains Mono;font-size:.65rem;color:#00e5a0'>✓ {pw_msg}</span>",
+                                unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<span style='font-family:JetBrains Mono;font-size:.65rem;color:#ff5f5f'>✗ {pw_msg}</span>",
+                                unsafe_allow_html=True)
+
+            if st.button("🆕 Create Account", use_container_width=True, type="primary"):
+                if not all([r_name, r_email, r_id, r_pw1, r_pw2]):
+                    st.error("All fields are required.")
+                elif r_pw1 != r_pw2:
+                    st.error("❌ Passwords do not match.")
+                else:
+                    ok, msg = register_user(r_id.strip(), r_pw1, r_name.strip(), r_email.strip())
+                    if ok:
+                        st.success(f"✅ {msg} You can now sign in.")
+                        st.balloons()
+                    else:
+                        st.error(f"❌ {msg}")
+
+            st.markdown("""
+            <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #1a2535;
+                        font-family:'JetBrains Mono',monospace;font-size:.63rem;
+                        color:#4a6a88;text-align:center">
+              Already have an account? Switch to <b style="color:#00e5a0">Sign In</b> above.
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.stop()  # ← nothing below renders until authenticated
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTHENTICATED: rest of the app renders below
+# ═══════════════════════════════════════════════════════════════════════════════
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EMISSION FACTOR DATABASE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# India State Grid EF (kg CO₂/kWh) — CEA CO2 Baseline 2022-23
 INDIA_STATE_EF = {
     "Andhra Pradesh": 0.863, "Arunachal Pradesh": 0.180, "Assam": 0.612,
     "Bihar": 1.021, "Chhattisgarh": 1.102, "Goa": 0.789,
@@ -266,7 +504,6 @@ INDIA_STATE_EF = {
     "India (National Avg)": 0.820,
 }
 
-# International Grid EF (kg CO₂/kWh) — IEA 2023
 INTL_COUNTRY_EF = {
     "United States": 0.386, "United Kingdom": 0.233, "Germany": 0.385,
     "France": 0.056, "Australia": 0.610, "China": 0.581,
@@ -277,24 +514,19 @@ INTL_COUNTRY_EF = {
     "Nepal": 0.031, "Global Average": 0.475,
 }
 
-# Fuel EF (kg CO₂/unit) — IPCC AR6 / DEFRA 2023 / BEE India
 FUEL_EF = {
     "India":   {"diesel": 2.68, "lpg": 2.98, "natural_gas": 2.03},
     "default": {"diesel": 2.64, "lpg": 2.94, "natural_gas": 2.02},
 }
 
-# ─── WATER EMISSION FACTORS (ENHANCED) ───────────────────────────────────────
-# Energy intensity of water supply (kWh/m³) — EPRI / IWA / Regional
 WATER_ENERGY_INTENSITY = {
-    # (supply_kwh_per_m3, treatment_kwh_per_m3, distribution_kwh_per_m3)
-    # supply = abstraction + primary treatment; treatment = advanced/wastewater; distribution = pumping
     "India": {
-        "supply_kwh_per_m3":       0.40,   # Surface water abstraction + primary treatment
-        "treatment_kwh_per_m3":    0.35,   # Wastewater treatment (activated sludge)
-        "distribution_kwh_per_m3": 0.25,   # Distribution pumping
-        "wastewater_return_rate":  0.80,   # Fraction of supply that becomes wastewater
-        "ch4_ef_kg_per_m3":        0.023,  # Direct CH4 from anaerobic wastewater (IPCC 2006)
-        "n2o_ef_kg_co2e_per_m3":   0.007,  # N₂O from nitrification/denitrification
+        "supply_kwh_per_m3":       0.40,
+        "treatment_kwh_per_m3":    0.35,
+        "distribution_kwh_per_m3": 0.25,
+        "wastewater_return_rate":  0.80,
+        "ch4_ef_kg_per_m3":        0.023,
+        "n2o_ef_kg_co2e_per_m3":   0.007,
     },
     "United Kingdom": {
         "supply_kwh_per_m3": 0.59, "treatment_kwh_per_m3": 0.54,
@@ -318,55 +550,19 @@ WATER_ENERGY_INTENSITY = {
     },
 }
 
-# ─── WASTE EMISSION FACTORS (ENHANCED) ───────────────────────────────────────
-# Disposal-method-specific EFs (kg CO₂e/kg) — IPCC 2006, DEFRA 2023, GHG Protocol
 WASTE_EF_MATRIX = {
-    # Organic / Food Waste
     "organic": {
-        "landfill":    0.587,   # High CH4 from anaerobic decomposition (IPCC Tier 2)
-        "composting":  0.055,   # Aerobic, low CH4
-        "anaerobic_digestion": 0.020,  # Biogas captured — net low
-        "incineration":0.020,   # Minimal – mostly CO2 from combustion, partial biogenic
+        "landfill": 0.587, "composting": 0.055,
+        "anaerobic_digestion": 0.020, "incineration": 0.020,
     },
-    # Recyclable: Paper / Cardboard
-    "paper": {
-        "landfill":    0.879,   # Slow anaerobic decay
-        "recycling":   0.021,   # Collection + reprocessing energy only
-        "incineration":1.062,   # DEFRA combustion EF
-    },
-    # Recyclable: Plastic
-    "plastic": {
-        "landfill":    0.024,   # Stable, minimal decay
-        "recycling":   0.043,   # Mechanical recycling energy
-        "incineration":2.948,   # High fossil CO2 from combustion
-    },
-    # Glass
-    "glass": {
-        "landfill":    0.009,
-        "recycling":   0.005,
-        "incineration":0.009,
-    },
-    # Metal (incl. cans, aluminium foil)
-    "metal": {
-        "landfill":    0.013,
-        "recycling":   0.008,
-        "incineration":0.013,
-    },
-    # General / Mixed (non-classified)
-    "general": {
-        "landfill":    0.460,
-        "incineration":0.580,
-        "recycling":   0.200,
-    },
-    # Hazardous / E-waste
-    "hazardous": {
-        "landfill":    0.600,
-        "incineration":0.900,
-        "specialist_treatment": 0.250,
-    },
+    "paper":     {"landfill": 0.879, "recycling": 0.021, "incineration": 1.062},
+    "plastic":   {"landfill": 0.024, "recycling": 0.043, "incineration": 2.948},
+    "glass":     {"landfill": 0.009, "recycling": 0.005, "incineration": 0.009},
+    "metal":     {"landfill": 0.013, "recycling": 0.008, "incineration": 0.013},
+    "general":   {"landfill": 0.460, "incineration": 0.580, "recycling": 0.200},
+    "hazardous": {"landfill": 0.600, "incineration": 0.900, "specialist_treatment": 0.250},
 }
 
-# Waste CH4 GWP-100 = 27.9 (AR6)
 MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -379,7 +575,6 @@ def get_fuel_ef(rtype):
     return FUEL_EF["India"] if rtype == "India – State" else FUEL_EF["default"]
 
 def get_water_profile(rtype, loc):
-    """Return water energy intensity profile for the region."""
     if rtype == "India – State":
         return WATER_ENERGY_INTENSITY["India"]
     if loc in WATER_ENERGY_INTENSITY:
@@ -387,46 +582,26 @@ def get_water_profile(rtype, loc):
     return WATER_ENERGY_INTENSITY["default"]
 
 def calc_water_emissions(water_m3, water_profile, grid_ef):
-    """
-    Detailed water emission calculation:
-      1. Supply energy (abstraction + primary treatment)
-      2. Distribution / pumping energy
-      3. Wastewater treatment energy
-      4. Direct CH4 fugitive from wastewater
-      5. Direct N2O from nitrification/denitrification
-    Returns dict with component breakdown.
-    """
     wp = water_profile
     ww_vol = water_m3 * wp["wastewater_return_rate"]
-
     em_supply       = water_m3  * wp["supply_kwh_per_m3"]       * grid_ef
     em_distribution = water_m3  * wp["distribution_kwh_per_m3"] * grid_ef
     em_ww_treatment = ww_vol    * wp["treatment_kwh_per_m3"]    * grid_ef
     em_ch4          = ww_vol    * wp["ch4_ef_kg_per_m3"]
     em_n2o          = ww_vol    * wp["n2o_ef_kg_co2e_per_m3"]
     em_total        = em_supply + em_distribution + em_ww_treatment + em_ch4 + em_n2o
-
     return {
-        "total":          em_total,
-        "supply":         em_supply,
-        "distribution":   em_distribution,
-        "ww_treatment":   em_ww_treatment,
-        "ch4_fugitive":   em_ch4,
-        "n2o_direct":     em_n2o,
-        "ww_volume_m3":   ww_vol,
-        # Energy breakdown (kWh)
-        "supply_kwh":     water_m3 * wp["supply_kwh_per_m3"],
-        "dist_kwh":       water_m3 * wp["distribution_kwh_per_m3"],
-        "ww_kwh":         ww_vol   * wp["treatment_kwh_per_m3"],
-        "total_kwh":      water_m3 * (wp["supply_kwh_per_m3"] + wp["distribution_kwh_per_m3"])
-                          + ww_vol * wp["treatment_kwh_per_m3"],
+        "total": em_total, "supply": em_supply, "distribution": em_distribution,
+        "ww_treatment": em_ww_treatment, "ch4_fugitive": em_ch4, "n2o_direct": em_n2o,
+        "ww_volume_m3": ww_vol,
+        "supply_kwh":   water_m3 * wp["supply_kwh_per_m3"],
+        "dist_kwh":     water_m3 * wp["distribution_kwh_per_m3"],
+        "ww_kwh":       ww_vol   * wp["treatment_kwh_per_m3"],
+        "total_kwh":    water_m3 * (wp["supply_kwh_per_m3"] + wp["distribution_kwh_per_m3"])
+                        + ww_vol * wp["treatment_kwh_per_m3"],
     }
 
 def calc_waste_emissions(waste_inputs):
-    """
-    waste_inputs: dict of {waste_type: {quantity_kg, disposal_method}}
-    Returns total emission and per-category breakdown.
-    """
     breakdown = {}
     total = 0.0
     for wtype, info in waste_inputs.items():
@@ -451,9 +626,38 @@ def plo(title):
     )
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SIDEBAR
+# SIDEBAR  (includes user panel + logout)
 # ═══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
+    # ── User info banner ──────────────────────────────────────────────────────
+    user_info = st.session_state.user_info
+    st.markdown(f"""
+    <div style="background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.2);
+                border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;
+                  color:#4a6a88;text-transform:uppercase;letter-spacing:2px;margin-bottom:.3rem">
+        Signed In As
+      </div>
+      <div style="font-family:'Outfit',sans-serif;font-size:.95rem;
+                  font-weight:600;color:#e8f4ff">
+        👤 {user_info['full_name']}
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.63rem;color:#4a6a88;margin-top:.2rem">
+        @{st.session_state.current_user} · {user_info['email']}
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:#4a6a88;margin-top:.15rem">
+        Member since {user_info['created_at']}
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("🚪 Sign Out", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.current_user  = None
+        st.session_state.user_info     = None
+        st.rerun()
+
+    st.markdown("---")
     st.markdown("## ⚙️ Configuration")
     building_name = st.text_input("Building Name", value="Tower A – Corporate HQ")
     num_months    = st.slider("Months to Track", 1, 12, 3)
@@ -509,6 +713,7 @@ st.markdown(f"""
     <span class="badge green">⚡ Grid EF: {grid_ef} kg CO₂/kWh</span>
     <span class="badge blue">💧 Water EI: {water_profile['supply_kwh_per_m3']+water_profile['distribution_kwh_per_m3']+water_profile['wastewater_return_rate']*water_profile['treatment_kwh_per_m3']:.2f} kWh/m³</span>
     <span class="badge">🌱 IPCC AR6 · IEA 2023 · DEFRA 2023</span>
+    <span class="badge green">👤 {user_info['full_name']}</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -546,7 +751,6 @@ for i, tab in enumerate(tabs):
         m = MONTHS[i]
         st.markdown(f"#### {m} — *{building_name}*")
 
-        # ── ELECTRICITY ───────────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.4rem">⚡ Electricity Breakdown (kWh)</div>',
                     unsafe_allow_html=True)
         ec1, ec2, ec3, ec4 = st.columns(4)
@@ -572,7 +776,6 @@ for i, tab in enumerate(tabs):
         renew = ren_col.number_input("☀️ Renewable Generation (kWh)", min_value=0.0, value=0.0,
                                      step=50.0, key=f"renew_{i}")
 
-        # ── FUEL ─────────────────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.6rem">🔥 Fuel Usage</div>',
                     unsafe_allow_html=True)
         fc1, fc2, fc3 = st.columns(3)
@@ -580,7 +783,6 @@ for i, tab in enumerate(tabs):
         lpg    = fc2.number_input("🔥 LPG (kg)",         min_value=0.0, value=0.0, step=5.0,  key=f"lpg_{i}")
         natgas = fc3.number_input("💨 Natural Gas (m³)", min_value=0.0, value=0.0, step=5.0,  key=f"natgas_{i}")
 
-        # ── WATER (ENHANCED) ──────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.6rem">💧 Water — Supply, Pumping & Wastewater Treatment</div>',
                     unsafe_allow_html=True)
 
@@ -589,7 +791,6 @@ for i, tab in enumerate(tabs):
             water_m3 = st.number_input("Total Water Consumption (m³)", min_value=0.0,
                                         value=200.0, step=10.0, key=f"water_{i}")
 
-        # Compute water emissions
         water_em = calc_water_emissions(water_m3, water_profile, grid_ef)
 
         with w_col2:
@@ -629,7 +830,6 @@ for i, tab in enumerate(tabs):
               </div>
             </div>""", unsafe_allow_html=True)
 
-        # ── WASTE (ENHANCED) ──────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.6rem">🗑️ Waste — Category & Disposal Method</div>',
                     unsafe_allow_html=True)
 
@@ -655,25 +855,20 @@ for i, tab in enumerate(tabs):
                                       label_visibility="collapsed")
                 waste_inputs_raw[wtype] = {"qty": qty, "method": method}
 
-        # ── COMPUTE ───────────────────────────────────────────────────────
         net_elec       = max(0.0, total_grid - renew)
         em_hvac        = hvac       * grid_ef
         em_lighting    = lighting   * grid_ef
         em_appliances  = appliances * grid_ef
         em_elevators   = elevators  * grid_ef
         em_electricity = net_elec   * grid_ef
-
-        em_diesel  = diesel * fuel_ef["diesel"]
-        em_lpg     = lpg    * fuel_ef["lpg"]
-        em_natgas  = natgas * fuel_ef["natural_gas"]
-        em_fuel    = em_diesel + em_lpg + em_natgas
-
-        em_water = water_em["total"]
-
+        em_diesel      = diesel * fuel_ef["diesel"]
+        em_lpg         = lpg    * fuel_ef["lpg"]
+        em_natgas      = natgas * fuel_ef["natural_gas"]
+        em_fuel        = em_diesel + em_lpg + em_natgas
+        em_water       = water_em["total"]
         em_waste_total, waste_breakdown = calc_waste_emissions(waste_inputs_raw)
-
-        em_total      = em_electricity + em_fuel + em_water + em_waste_total
-        renewable_pct = (renew / total_grid * 100) if total_grid > 0 else 0.0
+        em_total       = em_electricity + em_fuel + em_water + em_waste_total
+        renewable_pct  = (renew / total_grid * 100) if total_grid > 0 else 0.0
 
         monthly_data.append({
             "Month": m,
@@ -688,11 +883,9 @@ for i, tab in enumerate(tabs):
             "Water CH4 Emission": water_em["ch4_fugitive"],
             "Water N2O Emission": water_em["n2o_direct"],
             "Water Total kWh": water_em["total_kwh"],
-            # Waste per category
             **{f"Waste {wt} (kg)": waste_inputs_raw[wt]["qty"] for wt in waste_inputs_raw},
             **{f"Waste {wt} Method": waste_inputs_raw[wt]["method"] for wt in waste_inputs_raw},
             **{f"Em Waste {wt}": waste_breakdown[wt]["emission"] for wt in waste_breakdown},
-            # Sub-emissions
             "Em HVAC": em_hvac, "Em Lighting": em_lighting,
             "Em Appliances": em_appliances, "Em Elevators": em_elevators,
             "Elec Emission": em_electricity,
@@ -714,21 +907,17 @@ t1, t2, t3, t4, t5, t6 = st.tabs([
     "📋 Summary", "🔬 Month Detail", "⚡ Electricity", "💧 Water Deep Dive", "📈 Charts", "💡 Recommendations"
 ])
 
-# ── SUMMARY ───────────────────────────────────────────────────────────────────
 with t1:
     st.markdown(f"#### Monthly CO₂ Summary — *{building_name}* &nbsp;|&nbsp; 📍 {state_country}")
-
     disp = df[["Month","Elec Emission","Fuel Emission","Water Emission","Waste Emission",
                "Total Emission","Renewable %","Grid EF"]].round(2).copy()
     disp.columns = ["Month","Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)",
                     "Total CO₂ (kg)","Renewable %","Grid EF (kg/kWh)"]
-
     tots = disp[["Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)","Total CO₂ (kg)"]].sum()
     tr = pd.DataFrame([["─ TOTAL ─", tots["Electricity (kg)"], tots["Fuel (kg)"],
                          tots["Water (kg)"], tots["Waste (kg)"], tots["Total CO₂ (kg)"], "─", "─"]],
                       columns=disp.columns)
     disp_full = pd.concat([disp, tr], ignore_index=True)
-
     st.dataframe(
         disp_full.style
             .format({"Electricity (kg)": "{:.2f}", "Fuel (kg)": "{:.2f}",
@@ -737,7 +926,6 @@ with t1:
         use_container_width=True,
         height=min(420, (num_months + 3) * 38),
     )
-
     st.markdown("---")
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("🌍 Total CO₂", f"{df['Total Emission'].sum():,.1f} kg")
@@ -746,12 +934,10 @@ with t1:
     k4.metric("☀️ Avg Renewable", f"{df['Renewable %'].mean():.1f}%")
     k5.metric("📡 Grid EF", f"{grid_ef} kg/kWh")
 
-# ── MONTH DETAIL ──────────────────────────────────────────────────────────────
 with t2:
     sel = st.selectbox("Select Month", df["Month"].tolist(), key="sel_month_detail")
     row = df[df["Month"] == sel].iloc[0]
     st.markdown(f"#### {sel} — Full Breakdown")
-
     ca, cb, cc, cd = st.columns(4)
     for col_, label, icon, hint in [
         (ca, "Elec Emission",  "⚡ Electricity", f"Net {row['Net Elec (kWh)']:,.0f} kWh"),
@@ -775,7 +961,6 @@ with t2:
         saved = row["Renewables (kWh)"] * grid_ef
         st.success(f"☀️ Renewables avoided **{saved:,.1f} kg CO₂** this month ({row['Renewable %']:.1f}% offset at {grid_ef} kg/kWh).")
 
-    # ── Water sub-breakdown ─────────────────────────────────────────────
     st.markdown("---")
     st.markdown("##### 💧 Water Emission Ledger")
     st.markdown(f"""<div class="water-panel">
@@ -793,7 +978,6 @@ with t2:
       </div>
     </div>""", unsafe_allow_html=True)
 
-    # ── Waste sub-breakdown ─────────────────────────────────────────────
     st.markdown("##### 🗑️ Waste Emission Ledger")
     waste_rows = []
     for wtype in ["organic","paper","plastic","glass","metal","general","hazardous"]:
@@ -813,7 +997,6 @@ with t2:
         wdf = pd.DataFrame(waste_rows).round(4)
         st.dataframe(wdf, use_container_width=True, hide_index=True)
 
-# ── ELECTRICITY BREAKDOWN ─────────────────────────────────────────────────────
 with t3:
     st.markdown("#### ⚡ Electricity Sub-Category Analysis")
     ec1, ec2 = st.columns(2)
@@ -839,13 +1022,11 @@ with t3:
         ))
         fig_e2.update_layout(**plo("Avg kWh Consumption Share"))
         st.plotly_chart(fig_e2, use_container_width=True)
-
     elec_tbl = df[["Month","HVAC (kWh)","Lighting (kWh)","Appliances (kWh)","Elevators (kWh)",
                     "Total Grid (kWh)","Renewables (kWh)","Net Elec (kWh)","Elec Emission","Renewable %"]].round(2).copy()
     elec_tbl.columns = ["Month","HVAC","Lighting","Appliances","Elevators",
                          "Total Grid","Renewables","Net kWh","Net Emission (kg CO₂)","Renewable %"]
     st.dataframe(elec_tbl, use_container_width=True, hide_index=True)
-
     avg_hvac_pct = (df["Em HVAC"].sum() / df["Elec Emission"].sum() * 100) if df["Elec Emission"].sum() > 0 else 0
     if avg_hvac_pct > 45:
         st.markdown(f"""<div class="tip danger" style="margin-top:.8rem">
@@ -853,11 +1034,8 @@ with t3:
             Audit chiller performance (target COP ≥ 5.0), implement BMS setback schedules, improve building envelope insulation.
         </div>""", unsafe_allow_html=True)
 
-# ── WATER DEEP DIVE ───────────────────────────────────────────────────────────
 with t4:
     st.markdown("#### 💧 Water Emissions — Full Lifecycle Analysis")
-
-    # Info panel about methodology
     st.markdown(f"""<div class="water-panel">
       <div class="water-panel-title">📐 Methodology — EPRI / IWA / IPCC 2006 / GHG Protocol</div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#7a9ab8;line-height:1.8">
@@ -871,10 +1049,8 @@ with t4:
         ({water_profile['n2o_ef_kg_co2e_per_m3']*1000:.1f} g CO₂e/m³ WW)
       </div>
     </div>""", unsafe_allow_html=True)
-
     wc1, wc2 = st.columns(2)
     with wc1:
-        # Stacked bar – water emission components
         fig_w1 = go.Figure()
         for col_, clr, lbl in [
             ("Water Supply Emission","#5ab4f5","Supply & Abstraction"),
@@ -888,15 +1064,10 @@ with t4:
         fig_w1.update_layout(**plo("Water Emission Components by Month (kg CO₂e)"),
                               barmode="stack", yaxis_title="kg CO₂e")
         st.plotly_chart(fig_w1, use_container_width=True)
-
     with wc2:
-        avg_w = [
-            df["Water Supply Emission"].mean(),
-            df["Water Distribution Emission"].mean(),
-            df["Water WW Treatment Emission"].mean(),
-            df["Water CH4 Emission"].mean(),
-            df["Water N2O Emission"].mean(),
-        ]
+        avg_w = [df["Water Supply Emission"].mean(), df["Water Distribution Emission"].mean(),
+                 df["Water WW Treatment Emission"].mean(), df["Water CH4 Emission"].mean(),
+                 df["Water N2O Emission"].mean()]
         fig_w2 = go.Figure(go.Pie(
             labels=["Supply","Pumping","WW Treatment","CH₄ Fugitive","N₂O Direct"],
             values=avg_w, hole=0.58,
@@ -906,16 +1077,12 @@ with t4:
         ))
         fig_w2.update_layout(**plo("Avg Water Emission Share"))
         st.plotly_chart(fig_w2, use_container_width=True)
-
-    # Water emission table
     w_tbl = df[["Month","Water (m³)","Water Supply Emission","Water Distribution Emission",
                 "Water WW Treatment Emission","Water CH4 Emission","Water N2O Emission",
                 "Water Total kWh","Water Emission"]].round(4).copy()
     w_tbl.columns = ["Month","Water (m³)","Supply (kg)","Pumping (kg)","WW Treat (kg)",
                      "CH₄ (kg CO₂e)","N₂O (kg CO₂e)","Total kWh","Total CO₂e (kg)"]
     st.dataframe(w_tbl, use_container_width=True, hide_index=True)
-
-    # Water intensity metric
     total_water_kwh = df["Water Total kWh"].sum()
     total_water_m3  = df["Water (m³)"].sum()
     avg_intensity   = total_water_kwh / total_water_m3 if total_water_m3 > 0 else 0
@@ -925,8 +1092,6 @@ with t4:
     wk2.metric("⚡ Total Water Energy", f"{total_water_kwh:,.1f} kWh")
     wk3.metric("📊 Effective EI", f"{avg_intensity:.3f} kWh/m³")
     wk4.metric("🌊 WW Volume Treated", f"{total_water_m3 * water_profile['wastewater_return_rate']:,.0f} m³")
-
-    # Waste donut by category
     st.markdown("---")
     st.markdown("#### 🗑️ Waste Emissions by Category & Disposal Method")
     waste_labels_clean = []
@@ -950,7 +1115,6 @@ with t4:
             fig_ww.update_layout(**plo("Waste CO₂e by Category (Total)"))
             st.plotly_chart(fig_ww, use_container_width=True)
         with ww2:
-            # Show waste EF comparison
             wef_data = []
             for wtype in ["organic","paper","plastic","glass","metal","general","hazardous"]:
                 for method, ef in WASTE_EF_MATRIX.get(wtype,{}).items():
@@ -972,7 +1136,6 @@ with t4:
                                   barmode="group", yaxis_title="kg CO₂e/kg")
             st.plotly_chart(fig_ef, use_container_width=True)
 
-# ── CHARTS ────────────────────────────────────────────────────────────────────
 with t5:
     ch1, ch2 = st.columns(2)
     with ch1:
@@ -988,7 +1151,6 @@ with t5:
         fig1.update_layout(**plo("Monthly CO₂e by Category (kg)"),
                            barmode="stack", yaxis_title="kg CO₂e")
         st.plotly_chart(fig1, use_container_width=True)
-
     with ch2:
         avg_vals = [df["Elec Emission"].mean(), df["Fuel Emission"].mean(),
                     df["Water Emission"].mean(), df["Waste Emission"].mean()]
@@ -1000,7 +1162,6 @@ with t5:
         ))
         fig2.update_layout(**plo("Avg Emission Share Across Months"))
         st.plotly_chart(fig2, use_container_width=True)
-
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(
         x=df["Month"], y=df["Total Emission"], mode="lines+markers",
@@ -1010,7 +1171,6 @@ with t5:
     ))
     fig3.update_layout(**plo("Total Monthly CO₂e Trend (kg)"), yaxis_title="kg CO₂e")
     st.plotly_chart(fig3, use_container_width=True)
-
     if df["Renewables (kWh)"].sum() > 0:
         fig4 = go.Figure()
         fig4.add_trace(go.Bar(x=df["Month"], y=df["Total Grid (kWh)"], name="Grid Draw", marker_color="#ff5f5f"))
@@ -1019,18 +1179,15 @@ with t5:
                            barmode="group", yaxis_title="kWh")
         st.plotly_chart(fig4, use_container_width=True)
 
-# ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
 with t6:
     st.markdown(f"#### 💡 Location-Aware Recommendations — {state_country}")
     any_tip = False
-
     if grid_ef > 0.85:
         any_tip = True
         st.markdown(f"""<div class="tip danger">
             📡 <b>High grid emission factor ({grid_ef} kg/kWh)</b> for {state_country}.
             Prioritise on-site solar, RECs, or a green PPA. Each 1 MWh of renewable avoided = {grid_ef:.2f} tCO₂.
         </div>""", unsafe_allow_html=True)
-
     avg_hvac_pct = (df["Em HVAC"].sum() / df["Elec Emission"].sum() * 100) if df["Elec Emission"].sum() > 0 else 0
     if avg_hvac_pct > 45:
         any_tip = True
@@ -1038,69 +1195,54 @@ with t6:
             🌡️ <b>HVAC is {avg_hvac_pct:.0f}% of electricity emissions</b>.
             Upgrade to inverter chillers (COP ≥ 5.0), deploy BMS setback, improve envelope insulation. Target: cut cooling load 20–35%.
         </div>""", unsafe_allow_html=True)
-
     if df["Renewable %"].mean() < 10:
         any_tip = True
         st.markdown(f"""<div class="tip info">
             ☀️ <b>Renewable offset only {df['Renewable %'].mean():.1f}% avg</b>.
             At {grid_ef} kg/kWh, a 50 kWp rooftop system avoids ~{grid_ef*6000:.0f} kg CO₂/month.
         </div>""", unsafe_allow_html=True)
-
-    # Water-specific tips
     avg_water_em = df["Water Emission"].mean()
-    avg_water_kwh_per_m3 = (df["Water Total kWh"].sum() / df["Water (m³)"].sum()) if df["Water (m³)"].sum() > 0 else 0
     if avg_water_em > 50:
         any_tip = True
         st.markdown(f"""<div class="tip water">
             💧 <b>Water emissions average {avg_water_em:.1f} kg CO₂e/month</b> (incl. supply, pumping, wastewater treatment, CH₄ + N₂O).
-            Water-efficient fixtures (4-star WELS) reduce consumption 30–40%, cutting all downstream emission components proportionally.
+            Water-efficient fixtures (4-star WELS) reduce consumption 30–40%.
             Greywater recycling can reduce wastewater return volume, cutting WW treatment emissions by 20–50%.
         </div>""", unsafe_allow_html=True)
-
-    ww_em = df["Water WW Treatment Emission"].mean()
     ch4_em = df["Water CH4 Emission"].mean()
     if ch4_em > 0.01:
         any_tip = True
         st.markdown(f"""<div class="tip water">
             🌫️ <b>Wastewater CH₄ + N₂O average {(ch4_em + df['Water N2O Emission'].mean()):.4f} kg CO₂e/month</b>.
-            Install on-site STP with biogas capture to convert fugitive CH₄ into energy, turning a liability into an asset.
-            Aerobic treatment significantly reduces both CH₄ and N₂O direct emissions.
+            Install on-site STP with biogas capture to convert fugitive CH₄ into energy.
         </div>""", unsafe_allow_html=True)
-
-    # Waste-specific tips
     plastic_em = df["Em Waste plastic"].sum() if "Em Waste plastic" in df.columns else 0
-    organic_em = df["Em Waste organic"].sum() if "Em Waste organic" in df.columns else 0
     if plastic_em > 0:
         avg_plastic = df["Waste plastic (kg)"].mean() if "Waste plastic (kg)" in df.columns else 0
         any_tip = True
         st.markdown(f"""<div class="tip waste">
             🧴 <b>Plastic waste: {avg_plastic:.0f} kg/month avg</b>.
-            EF varies dramatically by disposal: recycling (0.043) vs incineration (2.948 kg CO₂e/kg) — <b>68× difference</b>.
-            Verify your recycler has certified mechanical recycling; chemical recycling has different EF.
+            EF varies dramatically: recycling (0.043) vs incineration (2.948 kg CO₂e/kg) — <b>68× difference</b>.
         </div>""", unsafe_allow_html=True)
-
+    organic_em = df["Em Waste organic"].sum() if "Em Waste organic" in df.columns else 0
     if organic_em > 0:
         avg_org = df["Waste organic (kg)"].mean() if "Waste organic (kg)" in df.columns else 0
         any_tip = True
         st.markdown(f"""<div class="tip waste">
             🥦 <b>Organic waste: {avg_org:.0f} kg/month avg</b>.
             Landfill EF (0.587) is 10× higher than composting (0.055) and 29× higher than anaerobic digestion (0.020).
-            Shift to in-vessel composting or biogas digester to capture methane and produce compost or energy.
         </div>""", unsafe_allow_html=True)
-
     if df["Fuel Emission"].mean() > 100:
         any_tip = True
         st.markdown(f"""<div class="tip">
             🔥 <b>Fuel emissions avg {df['Fuel Emission'].mean():,.0f} kg CO₂/month</b>.
             Replace diesel gensets with grid-tied UPS + Li-ion backup. LPG boilers → heat pump: 60–70% reduction.
         </div>""", unsafe_allow_html=True)
-
     if not any_tip:
         st.markdown(f"""<div class="tip good">
             🎉 <b>Building performance looks solid for {state_country}</b>.
             All categories within healthy ranges. Target 5–10% annual reduction via ISO 50001 energy audits.
         </div>""", unsafe_allow_html=True)
-
     st.markdown("---")
     st.markdown("##### 🏆 Emission Intensity Benchmarks")
     b1, b2, b3, b4 = st.columns(4)
@@ -1114,5 +1256,6 @@ st.divider()
 st.caption(
     f"🌱 Building Carbon Tracker · 📍 {state_country} · Grid EF: {grid_ef} kg CO₂/kWh · "
     "Water EI: EPRI/IWA · Waste: IPCC 2006/DEFRA 2023/GHG Protocol · "
-    "Sources: India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India · PPAC"
+    "Sources: India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India · PPAC · "
+    f"Session: {st.session_state.current_user}"
 )
