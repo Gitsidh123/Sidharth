@@ -37,7 +37,6 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def validate_password_strength(password):
-    """Returns (is_valid, message)"""
     if len(password) < 8:
         return False, "Password must be at least 8 characters."
     if not re.search(r"[A-Z]", password):
@@ -116,17 +115,11 @@ html, body, [class*="css"] {
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
 /* ── AUTH PANEL ── */
-.auth-wrapper {
-    max-width: 460px;
-    margin: 4rem auto;
-}
+.auth-wrapper { max-width: 460px; margin: 4rem auto; }
 .auth-card {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    border-radius: 20px;
-    padding: 2.4rem 2.8rem;
-    position: relative;
-    overflow: hidden;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 2.4rem 2.8rem;
+    position: relative; overflow: hidden;
 }
 .auth-card::before {
     content:''; position:absolute; top:-80px; right:-80px;
@@ -134,11 +127,7 @@ html, body, [class*="css"] {
     background:radial-gradient(circle,rgba(0,229,160,.07) 0%,transparent 65%);
     border-radius:50%; pointer-events:none;
 }
-.auth-logo {
-    font-size: 2.4rem;
-    text-align: center;
-    margin-bottom: .5rem;
-}
+.auth-logo { font-size: 2.4rem; text-align: center; margin-bottom: .5rem; }
 .auth-title {
     font-family:'Outfit',sans-serif; font-size: 1.55rem; font-weight: 700;
     color: #e8f4ff; text-align: center; margin-bottom: .25rem;
@@ -148,13 +137,6 @@ html, body, [class*="css"] {
     color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;
     text-align: center; margin-bottom: 1.8rem;
 }
-.auth-divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 1.2rem 0; font-family:'JetBrains Mono',monospace;
-    font-size: .62rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px;
-}
-.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background: var(--border); }
-
 .user-pill {
     display: inline-flex; align-items: center; gap: 8px;
     background: rgba(0,229,160,.08); border: 1px solid rgba(0,229,160,.25);
@@ -165,12 +147,9 @@ html, body, [class*="css"] {
 /* ── HERO ── */
 .hero {
     background: linear-gradient(135deg, #050f0a 0%, #080e18 60%, #060a0e 100%);
-    border: 1px solid var(--border2);
-    border-radius: 22px;
-    padding: 2.4rem 3rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
+    border: 1px solid var(--border2); border-radius: 22px;
+    padding: 2.4rem 3rem; margin-bottom: 2rem;
+    position: relative; overflow: hidden;
 }
 .hero::before {
     content:''; position:absolute; top:-80px; right:-80px;
@@ -225,6 +204,49 @@ html, body, [class*="css"] {
 .card-val { font-family:'JetBrains Mono',monospace; font-size:1.75rem; font-weight:700; color:var(--text); line-height:1.1; }
 .card-unit { font-family:'JetBrains Mono',monospace; font-size:.68rem; color:var(--green); margin-top:.2rem; }
 
+/* ── RENEWABLE PANEL ── */
+.renew-panel {
+    background: linear-gradient(135deg, #050f0a 0%, #071210 100%);
+    border: 1px solid rgba(0,229,160,.25);
+    border-radius: 14px; padding: 1.1rem 1.4rem; margin: .6rem 0;
+}
+.renew-panel-title {
+    font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--green);
+    text-transform:uppercase; letter-spacing:2.5px; margin-bottom:.85rem;
+    display:flex; align-items:center; gap:8px;
+}
+.renew-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:.35rem 0; border-bottom:1px solid rgba(0,229,160,.07);
+    font-family:'JetBrains Mono',monospace; font-size:.73rem;
+}
+.renew-row:last-child { border-bottom:none; }
+.renew-lbl { color:var(--text-mid); }
+.renew-val { color:var(--green); font-weight:600; }
+.renew-note { color:var(--text-dim); font-size:.62rem; }
+
+/* ── FUEL PANEL ── */
+.fuel-panel {
+    background: linear-gradient(135deg, #0f0a05 0%, #160e06 100%);
+    border: 1px solid rgba(255,179,71,.22);
+    border-radius: 14px; padding: 1.1rem 1.4rem; margin: .6rem 0;
+}
+.fuel-panel-title {
+    font-family:'JetBrains Mono',monospace; font-size:.65rem; color:var(--amber);
+    text-transform:uppercase; letter-spacing:2.5px; margin-bottom:.85rem;
+    display:flex; align-items:center; gap:8px;
+}
+.fuel-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:.38rem 0; border-bottom:1px solid rgba(255,179,71,.07);
+    font-family:'JetBrains Mono',monospace; font-size:.73rem;
+}
+.fuel-row:last-child { border-bottom:none; }
+.fuel-lbl  { color:var(--text-mid); }
+.fuel-val  { color:var(--amber); font-weight:600; }
+.fuel-ef   { color:var(--text-dim); font-size:.62rem; }
+.fuel-em   { color:#ff9f43; font-weight:700; font-size:.82rem; }
+
 /* ── WATER PANEL ── */
 .water-panel {
     background: linear-gradient(135deg, #060f1a 0%, #080e1e 100%);
@@ -236,12 +258,6 @@ html, body, [class*="css"] {
     text-transform:uppercase; letter-spacing:2.5px; margin-bottom:1rem;
     display:flex; align-items:center; gap:8px;
 }
-.water-component {
-    background:rgba(90,180,245,.06); border:1px solid rgba(90,180,245,.12);
-    border-radius:10px; padding:.75rem 1rem; margin-bottom:.5rem;
-}
-.water-component-label { font-family:'JetBrains Mono',monospace; font-size:.6rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.5px; }
-.water-component-value { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:600; color:var(--blue); }
 .water-breakdown-row {
     display:flex; justify-content:space-between; align-items:center;
     padding:.4rem 0; border-bottom:1px solid rgba(90,180,245,.08);
@@ -263,19 +279,6 @@ html, body, [class*="css"] {
     text-transform:uppercase; letter-spacing:2.5px; margin-bottom:1rem;
     display:flex; align-items:center; gap:8px;
 }
-.waste-category {
-    border-radius:10px; padding:.75rem 1rem; margin-bottom:.5rem;
-    display:flex; align-items:center; gap:12px;
-}
-.waste-organic  { background:rgba(255,160,80,.06);  border:1px solid rgba(255,160,80,.15); }
-.waste-recycl   { background:rgba(0,229,160,.05);   border:1px solid rgba(0,229,160,.12); }
-.waste-landfill { background:rgba(255,95,95,.06);   border:1px solid rgba(255,95,95,.12); }
-.waste-incinerate { background:rgba(255,192,77,.06); border:1px solid rgba(255,192,77,.12); }
-.waste-cat-icon { font-size:1.3rem; }
-.waste-cat-info { flex:1; }
-.waste-cat-name { font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--text); font-weight:500; }
-.waste-cat-desc { font-family:'JetBrains Mono',monospace; font-size:.6rem; color:var(--text-dim); margin-top:.1rem; }
-.waste-cat-em   { font-family:'JetBrains Mono',monospace; font-size:.85rem; font-weight:600; }
 
 /* ── TOTAL HERO ── */
 .total-hero {
@@ -313,6 +316,8 @@ html, body, [class*="css"] {
 .tip.info   { border-left-color:var(--blue); }
 .tip.water  { border-left-color:var(--cyan); }
 .tip.waste  { border-left-color:var(--purple); }
+.tip.renew  { border-left-color:var(--green); background:rgba(0,229,160,.03); }
+.tip.fuel   { border-left-color:var(--amber); background:rgba(255,192,77,.03); }
 
 /* ── ELEC SUMMARY ── */
 .elec-summary {
@@ -355,7 +360,7 @@ div[data-testid="stNumberInput"] input {
 /* ── DIVIDER ── */
 hr { border-color:var(--border) !important; margin:1.5rem 0 !important; }
 
-/* ── AUTH BUTTON TWEAKS ── */
+/* ── BUTTON TWEAKS ── */
 div[data-testid="stButton"] > button {
     font-family:'JetBrains Mono',monospace !important;
     font-size:.72rem !important; letter-spacing:1px;
@@ -373,15 +378,11 @@ if "current_user" not in st.session_state:
     st.session_state.current_user = None
 if "user_info" not in st.session_state:
     st.session_state.user_info = None
-if "auth_tab" not in st.session_state:
-    st.session_state.auth_tab = "login"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# AUTH SCREEN  (shown when not logged in)
+# AUTH SCREEN
 # ═══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.authenticated:
-
-    # Center the auth card
     _, mid, _ = st.columns([1, 1.6, 1])
     with mid:
         st.markdown("""
@@ -393,20 +394,15 @@ if not st.session_state.authenticated:
         """, unsafe_allow_html=True)
 
         auth_tab = st.radio(
-            "Auth Mode",
-            ["🔐 Sign In", "🆕 Create Account"],
-            horizontal=True,
-            label_visibility="collapsed",
+            "Auth Mode", ["🔐 Sign In", "🆕 Create Account"],
+            horizontal=True, label_visibility="collapsed",
         )
-
         st.markdown("---")
 
-        # ── LOGIN ──────────────────────────────────────────────────────────
         if auth_tab == "🔐 Sign In":
             st.markdown("##### Sign in to your account")
             login_id = st.text_input("User ID", placeholder="Enter your user ID", key="login_id")
             login_pw = st.text_input("Password", type="password", placeholder="Enter your password", key="login_pw")
-
             col_a, col_b = st.columns([2, 1])
             with col_a:
                 if st.button("🔓 Sign In", use_container_width=True, type="primary"):
@@ -425,29 +421,15 @@ if not st.session_state.authenticated:
             with col_b:
                 if st.button("Clear", use_container_width=True):
                     st.rerun()
-
-            st.markdown("""
-            <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #1a2535;
-                        font-family:'JetBrains Mono',monospace;font-size:.63rem;
-                        color:#4a6a88;text-align:center">
-              Don't have an account? Switch to <b style="color:#00e5a0">Create Account</b> above.
-            </div>
-            """, unsafe_allow_html=True)
-
-        # ── REGISTER ──────────────────────────────────────────────────────
         else:
             st.markdown("##### Create a new account")
-
             r_name  = st.text_input("Full Name", placeholder="Your full name", key="r_name")
             r_email = st.text_input("Email Address", placeholder="name@company.com", key="r_email")
             r_id    = st.text_input("Choose a User ID", placeholder="letters, numbers, underscores (min 3 chars)", key="r_id")
-
             r_pw1 = st.text_input("Password", type="password",
                                    placeholder="Min 8 chars · 1 uppercase · 1 number", key="r_pw1")
             r_pw2 = st.text_input("Confirm Password", type="password",
                                    placeholder="Re-enter your password", key="r_pw2")
-
-            # Live password strength feedback
             if r_pw1:
                 valid_pw, pw_msg = validate_password_strength(r_pw1)
                 if valid_pw:
@@ -456,7 +438,6 @@ if not st.session_state.authenticated:
                 else:
                     st.markdown(f"<span style='font-family:JetBrains Mono;font-size:.65rem;color:#ff5f5f'>✗ {pw_msg}</span>",
                                 unsafe_allow_html=True)
-
             if st.button("🆕 Create Account", use_container_width=True, type="primary"):
                 if not all([r_name, r_email, r_id, r_pw1, r_pw2]):
                     st.error("All fields are required.")
@@ -469,21 +450,7 @@ if not st.session_state.authenticated:
                         st.balloons()
                     else:
                         st.error(f"❌ {msg}")
-
-            st.markdown("""
-            <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #1a2535;
-                        font-family:'JetBrains Mono',monospace;font-size:.63rem;
-                        color:#4a6a88;text-align:center">
-              Already have an account? Switch to <b style="color:#00e5a0">Sign In</b> above.
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.stop()  # ← nothing below renders until authenticated
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# AUTHENTICATED: rest of the app renders below
-# ═══════════════════════════════════════════════════════════════════════════════
+    st.stop()
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EMISSION FACTOR DATABASE
@@ -514,9 +481,22 @@ INTL_COUNTRY_EF = {
     "Nepal": 0.031, "Global Average": 0.475,
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CHANGE 4: DETAILED FUEL EMISSION FACTORS
+# Each fuel type is separated with its own EF, use-case label, and unit.
+# Sources: IPCC AR6, PPAC India, DEFRA 2023
+# ─────────────────────────────────────────────────────────────────────────────
 FUEL_EF = {
-    "India":   {"diesel": 2.68, "lpg": 2.98, "natural_gas": 2.03},
-    "default": {"diesel": 2.64, "lpg": 2.94, "natural_gas": 2.02},
+    "India": {
+        "diesel":      {"ef": 2.68, "unit": "litres",  "use": "Generator / DG Set",  "scope": "Scope 1"},
+        "lpg":         {"ef": 2.98, "unit": "kg",      "use": "Cooking / Canteen",    "scope": "Scope 1"},
+        "natural_gas": {"ef": 2.03, "unit": "m³",      "use": "Heating / Boiler",     "scope": "Scope 1"},
+    },
+    "default": {
+        "diesel":      {"ef": 2.64, "unit": "litres",  "use": "Generator / DG Set",  "scope": "Scope 1"},
+        "lpg":         {"ef": 2.94, "unit": "kg",      "use": "Cooking / Canteen",    "scope": "Scope 1"},
+        "natural_gas": {"ef": 2.02, "unit": "m³",      "use": "Heating / Boiler",     "scope": "Scope 1"},
+    },
 }
 
 WATER_ENERGY_INTENSITY = {
@@ -613,6 +593,61 @@ def calc_waste_emissions(waste_inputs):
         total += em
     return total, breakdown
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CHANGE 3: REFINED RENEWABLE ENERGY CALCULATION
+# Accounts for self-consumption vs grid export and time mismatch penalty.
+# self_consumption_rate: fraction of solar actually used on-site (0–1)
+# time_mismatch_factor:  penalty for generation/usage time misalignment (0–1)
+#   - 1.0 = perfect alignment (e.g. daytime office + daytime solar)
+#   - 0.5 = moderate mismatch (some generation wasted or exported at low value)
+# ─────────────────────────────────────────────────────────────────────────────
+def calc_renewable_breakdown(total_grid_kwh, renew_kwh, self_consumption_rate,
+                              time_mismatch_factor, grid_ef):
+    """
+    Returns a dict with all renewable accounting fields.
+    self_consumed:     kWh used on-site directly (offsets grid draw)
+    grid_export:       kWh fed back to grid (partial credit)
+    effective_offset:  kWh of grid avoided after time-mismatch penalty
+    em_avoided:        kg CO2e avoided via self-consumption
+    em_export_credit:  kg CO2e credit for exported units (50% of full EF)
+    net_elec_kwh:      grid kWh actually charged to the building
+    net_elec_em:       kg CO2e from net grid electricity
+    """
+    # Time mismatch applied first — reduces how much of the generated power is useful
+    effective_renew = renew_kwh * time_mismatch_factor
+
+    # Split effective renewable into self-consumed and exported
+    self_consumed = effective_renew * self_consumption_rate
+    grid_export   = effective_renew * (1.0 - self_consumption_rate)
+
+    # Self-consumption directly offsets grid draw
+    net_elec_kwh = max(0.0, total_grid_kwh - self_consumed)
+
+    # Export gets 50% credit (grid displacement at off-peak times is partial)
+    export_credit_kwh = grid_export * 0.5
+
+    em_avoided       = self_consumed * grid_ef
+    em_export_credit = export_credit_kwh * grid_ef
+    net_elec_em      = net_elec_kwh * grid_ef
+
+    total_renew_benefit_kwh = self_consumed + export_credit_kwh
+    renew_pct = (total_renew_benefit_kwh / total_grid_kwh * 100) if total_grid_kwh > 0 else 0.0
+
+    return {
+        "renew_generated":        renew_kwh,
+        "effective_renew":        effective_renew,
+        "self_consumed":          self_consumed,
+        "grid_export":            grid_export,
+        "export_credit_kwh":      export_credit_kwh,
+        "net_elec_kwh":           net_elec_kwh,
+        "em_avoided":             em_avoided,
+        "em_export_credit":       em_export_credit,
+        "net_elec_em":            net_elec_em,
+        "renew_pct":              renew_pct,
+        "time_mismatch_factor":   time_mismatch_factor,
+        "self_consumption_rate":  self_consumption_rate,
+    }
+
 def plo(title):
     return dict(
         title=title, paper_bgcolor="#0b1118", plot_bgcolor="#0b1118",
@@ -626,10 +661,9 @@ def plo(title):
     )
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SIDEBAR  (includes user panel + logout)
+# SIDEBAR
 # ═══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    # ── User info banner ──────────────────────────────────────────────────────
     user_info = st.session_state.user_info
     st.markdown(f"""
     <div style="background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.2);
@@ -683,19 +717,27 @@ with st.sidebar:
     st.markdown(f"""
 <div class="ef-pills">
 <div class="ef-pill green">⚡ Grid {grid_ef} kg/kWh</div>
-<div class="ef-pill">🛢 Diesel {fuel_ef['diesel']} kg/L</div>
-<div class="ef-pill">🔥 LPG {fuel_ef['lpg']} kg/kg</div>
-<div class="ef-pill">💨 Gas {fuel_ef['natural_gas']} kg/m³</div>
+</div>
+<div class="ef-pills">
+<div class="ef-pill">🛢 Diesel {fuel_ef['diesel']['ef']} kg/L · {fuel_ef['diesel']['use']}</div>
+</div>
+<div class="ef-pills">
+<div class="ef-pill">🔥 LPG {fuel_ef['lpg']['ef']} kg/kg · {fuel_ef['lpg']['use']}</div>
+</div>
+<div class="ef-pills">
+<div class="ef-pill">💨 Nat Gas {fuel_ef['natural_gas']['ef']} kg/m³ · {fuel_ef['natural_gas']['use']}</div>
 </div>
 <div class="ef-pills">
 <div class="ef-pill blue">💧 Supply {water_profile['supply_kwh_per_m3']} kWh/m³</div>
 <div class="ef-pill cyan">🚿 Pumping {water_profile['distribution_kwh_per_m3']} kWh/m³</div>
+</div>
+<div class="ef-pills">
 <div class="ef-pill blue">⬇️ WW Treat {water_profile['treatment_kwh_per_m3']} kWh/m³</div>
 <div class="ef-pill cyan">♻️ WW Return {water_profile['wastewater_return_rate']*100:.0f}%</div>
 </div>
 """, unsafe_allow_html=True)
     st.markdown("---")
-    st.caption("India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · EPRI · IWA · GHG Protocol")
+    st.caption("India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · EPRI · IWA · GHG Protocol · PPAC India")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEADER
@@ -706,6 +748,7 @@ st.markdown(f"""
   <div class="hero-title">🏢 Building Carbon Footprint Tracker</div>
   <div class="hero-sub">
     Location-calibrated operational emissions &nbsp;·&nbsp; HVAC / Lighting / Appliances / Elevators<br>
+    Refined renewable accounting (self-consumption + export) &nbsp;·&nbsp; Fuel categorised by end-use<br>
     Enhanced water cycle accounting &nbsp;·&nbsp; Waste disposal method classification
   </div>
   <div class="hero-badges">
@@ -751,6 +794,7 @@ for i, tab in enumerate(tabs):
         m = MONTHS[i]
         st.markdown(f"#### {m} — *{building_name}*")
 
+        # ── Electricity ───────────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.4rem">⚡ Electricity Breakdown (kWh)</div>',
                     unsafe_allow_html=True)
         ec1, ec2, ec3, ec4 = st.columns(4)
@@ -772,17 +816,130 @@ for i, tab in enumerate(tabs):
               </span>
             </div>""", unsafe_allow_html=True)
 
-        ren_col, _ = st.columns([1, 2])
-        renew = ren_col.number_input("☀️ Renewable Generation (kWh)", min_value=0.0, value=0.0,
-                                     step=50.0, key=f"renew_{i}")
-
-        st.markdown('<div class="sec-lbl" style="margin-top:.6rem">🔥 Fuel Usage</div>',
+        # ─────────────────────────────────────────────────────────────────
+        # CHANGE 3: REFINED RENEWABLE ENERGY INPUTS
+        # Users now specify generation amount, self-consumption rate,
+        # and a time-mismatch factor instead of just a generation total.
+        # ─────────────────────────────────────────────────────────────────
+        st.markdown('<div class="sec-lbl" style="margin-top:.5rem">☀️ On-Site Renewable Energy — Self-Consumption & Export</div>',
                     unsafe_allow_html=True)
-        fc1, fc2, fc3 = st.columns(3)
-        diesel = fc1.number_input("🛢 Diesel (litres)",  min_value=0.0, value=0.0, step=10.0, key=f"diesel_{i}")
-        lpg    = fc2.number_input("🔥 LPG (kg)",         min_value=0.0, value=0.0, step=5.0,  key=f"lpg_{i}")
-        natgas = fc3.number_input("💨 Natural Gas (m³)", min_value=0.0, value=0.0, step=5.0,  key=f"natgas_{i}")
 
+        ren_c1, ren_c2, ren_c3 = st.columns(3)
+        renew = ren_c1.number_input(
+            "☀️ Renewable Generated (kWh)",
+            min_value=0.0, value=0.0, step=50.0, key=f"renew_{i}",
+            help="Total kWh generated by on-site solar / wind this month"
+        )
+        self_consumption_rate = ren_c2.slider(
+            "🏠 Self-Consumption Rate (%)",
+            min_value=0, max_value=100, value=70, step=5, key=f"sc_rate_{i}",
+            help="% of generated energy consumed on-site. Remainder is exported to grid."
+        ) / 100.0
+        time_mismatch_pct = ren_c3.slider(
+            "⏱ Generation–Usage Match (%)",
+            min_value=0, max_value=100, value=85, step=5, key=f"tmm_{i}",
+            help="How well generation timing aligns with consumption. 100% = perfect daytime match. Lower if significant generation occurs off-peak."
+        )
+        time_mismatch_factor = time_mismatch_pct / 100.0
+
+        # Compute refined renewable breakdown
+        renew_breakdown = calc_renewable_breakdown(
+            total_grid, renew, self_consumption_rate, time_mismatch_factor, grid_ef
+        )
+
+        if renew > 0:
+            rb = renew_breakdown
+            st.markdown(f"""<div class="renew-panel">
+              <div class="renew-panel-title">☀️ Renewable Accounting — Self-Consumption + Grid Export</div>
+              <div class="renew-row">
+                <span class="renew-lbl">⚡ Total Generated</span>
+                <span class="renew-val">{rb['renew_generated']:,.1f} kWh</span>
+                <span class="renew-note">raw output</span>
+              </div>
+              <div class="renew-row">
+                <span class="renew-lbl">⏱ After Time-Mismatch Penalty ({time_mismatch_pct}%)</span>
+                <span class="renew-val">{rb['effective_renew']:,.1f} kWh</span>
+                <span class="renew-note">{rb['renew_generated'] - rb['effective_renew']:,.1f} kWh lost to mismatch</span>
+              </div>
+              <div class="renew-row">
+                <span class="renew-lbl">🏠 Self-Consumed On-Site ({int(self_consumption_rate*100)}%)</span>
+                <span class="renew-val">{rb['self_consumed']:,.1f} kWh</span>
+                <span class="renew-note">→ avoids {rb['em_avoided']:,.2f} kg CO₂e</span>
+              </div>
+              <div class="renew-row">
+                <span class="renew-lbl">🔌 Exported to Grid ({int((1-self_consumption_rate)*100)}%)</span>
+                <span class="renew-val">{rb['grid_export']:,.1f} kWh</span>
+                <span class="renew-note">→ 50% credit = {rb['export_credit_kwh']:,.1f} kWh · {rb['em_export_credit']:,.2f} kg CO₂e</span>
+              </div>
+              <div class="renew-row" style="border-top:1px solid rgba(0,229,160,.15);margin-top:.3rem;padding-top:.45rem">
+                <span class="renew-lbl" style="color:#00e5a0;font-weight:600">Net Grid Draw</span>
+                <span class="renew-val" style="font-size:.95rem">{rb['net_elec_kwh']:,.1f} kWh</span>
+                <span class="renew-note" style="color:#00e5a0">{rb['renew_pct']:.1f}% effective offset · {rb['net_elec_em']:,.2f} kg CO₂e</span>
+              </div>
+            </div>""", unsafe_allow_html=True)
+
+        # ─────────────────────────────────────────────────────────────────
+        # CHANGE 4: DETAILED FUEL CATEGORISATION
+        # Each fuel has its own section with use-case label, EF, and
+        # individual emission calculation shown inline.
+        # ─────────────────────────────────────────────────────────────────
+        st.markdown('<div class="sec-lbl" style="margin-top:.6rem">⛽ Fuel Usage — Categorised by End-Use</div>',
+                    unsafe_allow_html=True)
+
+        fc1, fc2, fc3 = st.columns(3)
+        with fc1:
+            st.markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:.6rem;color:#ffc04d;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.2rem'>🛢 Diesel · {fuel_ef['diesel']['use']}</div>", unsafe_allow_html=True)
+            diesel = st.number_input(
+                f"Diesel (litres) · EF: {fuel_ef['diesel']['ef']} kg CO₂/L",
+                min_value=0.0, value=0.0, step=10.0, key=f"diesel_{i}",
+                help=f"Scope 1 · Use: {fuel_ef['diesel']['use']} · Source: PPAC / IPCC AR6"
+            )
+        with fc2:
+            st.markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:.6rem;color:#ffc04d;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.2rem'>🔥 LPG · {fuel_ef['lpg']['use']}</div>", unsafe_allow_html=True)
+            lpg = st.number_input(
+                f"LPG (kg) · EF: {fuel_ef['lpg']['ef']} kg CO₂/kg",
+                min_value=0.0, value=0.0, step=5.0, key=f"lpg_{i}",
+                help=f"Scope 1 · Use: {fuel_ef['lpg']['use']} · Source: IPCC AR6"
+            )
+        with fc3:
+            st.markdown(f"<div style='font-family:JetBrains Mono,monospace;font-size:.6rem;color:#ffc04d;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.2rem'>💨 Natural Gas · {fuel_ef['natural_gas']['use']}</div>", unsafe_allow_html=True)
+            natgas = st.number_input(
+                f"Natural Gas (m³) · EF: {fuel_ef['natural_gas']['ef']} kg CO₂/m³",
+                min_value=0.0, value=0.0, step=5.0, key=f"natgas_{i}",
+                help=f"Scope 1 · Use: {fuel_ef['natural_gas']['use']} · Source: DEFRA 2023"
+            )
+
+        em_diesel  = diesel * fuel_ef["diesel"]["ef"]
+        em_lpg     = lpg    * fuel_ef["lpg"]["ef"]
+        em_natgas  = natgas * fuel_ef["natural_gas"]["ef"]
+        em_fuel    = em_diesel + em_lpg + em_natgas
+
+        if em_fuel > 0:
+            st.markdown(f"""<div class="fuel-panel">
+              <div class="fuel-panel-title">⛽ Fuel Emission Breakdown — Scope 1 Direct Combustion</div>
+              <div class="fuel-row">
+                <span class="fuel-lbl">🛢 Diesel (Generator / DG Set)</span>
+                <span class="fuel-val">{diesel:.1f} L &nbsp;×&nbsp; {fuel_ef['diesel']['ef']} kg/L</span>
+                <span class="fuel-em">{em_diesel:.2f} kg CO₂e</span>
+              </div>
+              <div class="fuel-row">
+                <span class="fuel-lbl">🔥 LPG (Cooking / Canteen)</span>
+                <span class="fuel-val">{lpg:.1f} kg &nbsp;×&nbsp; {fuel_ef['lpg']['ef']} kg/kg</span>
+                <span class="fuel-em">{em_lpg:.2f} kg CO₂e</span>
+              </div>
+              <div class="fuel-row">
+                <span class="fuel-lbl">💨 Natural Gas (Heating / Boiler)</span>
+                <span class="fuel-val">{natgas:.1f} m³ &nbsp;×&nbsp; {fuel_ef['natural_gas']['ef']} kg/m³</span>
+                <span class="fuel-em">{em_natgas:.2f} kg CO₂e</span>
+              </div>
+              <div class="fuel-row" style="border-top:1px solid rgba(255,179,71,.15);margin-top:.3rem;padding-top:.45rem">
+                <span class="fuel-lbl" style="color:#ffc04d;font-weight:600">Total Fuel Emission</span>
+                <span class="fuel-ef">All fuels combined</span>
+                <span class="fuel-em" style="font-size:.95rem;color:#ffb347">{em_fuel:.2f} kg CO₂e</span>
+              </div>
+            </div>""", unsafe_allow_html=True)
+
+        # ── Water ─────────────────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.6rem">💧 Water — Supply, Pumping & Wastewater Treatment</div>',
                     unsafe_allow_html=True)
 
@@ -830,6 +987,7 @@ for i, tab in enumerate(tabs):
               </div>
             </div>""", unsafe_allow_html=True)
 
+        # ── Waste ─────────────────────────────────────────────────────────
         st.markdown('<div class="sec-lbl" style="margin-top:.6rem">🗑️ Waste — Category & Disposal Method</div>',
                     unsafe_allow_html=True)
 
@@ -851,31 +1009,37 @@ for i, tab in enumerate(tabs):
                 qty = st.number_input(f"{label} (kg)", min_value=0.0, value=default_qty,
                                       step=2.0, key=f"w_{wtype}_{i}")
                 method = st.selectbox(f"Disposal", WASTE_DISPOSAL_OPTIONS[wtype],
-                                      key=f"wd_{wtype}_{i}",
-                                      label_visibility="collapsed")
+                                      key=f"wd_{wtype}_{i}", label_visibility="collapsed")
                 waste_inputs_raw[wtype] = {"qty": qty, "method": method}
 
-        net_elec       = max(0.0, total_grid - renew)
+        # ── Emission Calculations ─────────────────────────────────────────
+        rb             = renew_breakdown
         em_hvac        = hvac       * grid_ef
         em_lighting    = lighting   * grid_ef
         em_appliances  = appliances * grid_ef
         em_elevators   = elevators  * grid_ef
-        em_electricity = net_elec   * grid_ef
-        em_diesel      = diesel * fuel_ef["diesel"]
-        em_lpg         = lpg    * fuel_ef["lpg"]
-        em_natgas      = natgas * fuel_ef["natural_gas"]
-        em_fuel        = em_diesel + em_lpg + em_natgas
+        # Net electricity emission uses the refined net_elec_kwh (self-consumption already deducted)
+        em_electricity = rb["net_elec_em"]
         em_water       = water_em["total"]
         em_waste_total, waste_breakdown = calc_waste_emissions(waste_inputs_raw)
         em_total       = em_electricity + em_fuel + em_water + em_waste_total
-        renewable_pct  = (renew / total_grid * 100) if total_grid > 0 else 0.0
 
         monthly_data.append({
             "Month": m,
             "HVAC (kWh)": hvac, "Lighting (kWh)": lighting,
             "Appliances (kWh)": appliances, "Elevators (kWh)": elevators,
-            "Total Grid (kWh)": total_grid, "Renewables (kWh)": renew, "Net Elec (kWh)": net_elec,
+            "Total Grid (kWh)": total_grid,
+            "Renewables Generated (kWh)": renew,
+            "Renewables Self-Consumed (kWh)": rb["self_consumed"],
+            "Renewables Grid Export (kWh)": rb["grid_export"],
+            "Renewables Export Credit (kWh)": rb["export_credit_kwh"],
+            "Time Mismatch Factor": rb["time_mismatch_factor"],
+            "Self Consumption Rate": rb["self_consumption_rate"],
+            "Net Elec (kWh)": rb["net_elec_kwh"],
+            "Renewable %": rb["renew_pct"],
+            # Fuel — separated by type
             "Diesel (L)": diesel, "LPG (kg)": lpg, "Nat Gas (m³)": natgas,
+            "Em Diesel": em_diesel, "Em LPG": em_lpg, "Em Nat Gas": em_natgas,
             "Water (m³)": water_m3,
             "Water Supply Emission": water_em["supply"],
             "Water Distribution Emission": water_em["distribution"],
@@ -893,7 +1057,6 @@ for i, tab in enumerate(tabs):
             "Water Emission": em_water,
             "Waste Emission": em_waste_total,
             "Total Emission": em_total,
-            "Renewable %": renewable_pct,
             "Grid EF": grid_ef,
         })
 
@@ -904,7 +1067,8 @@ df = pd.DataFrame(monthly_data)
 st.markdown('<div class="sec-lbl">📊 Results & Analysis</div>', unsafe_allow_html=True)
 
 t1, t2, t3, t4, t5, t6 = st.tabs([
-    "📋 Summary", "🔬 Month Detail", "⚡ Electricity", "💧 Water Deep Dive", "📈 Charts", "💡 Recommendations"
+    "📋 Summary", "🔬 Month Detail", "⚡ Electricity & ☀️ Renewables",
+    "💧 Water Deep Dive", "📈 Charts", "💡 Recommendations"
 ])
 
 with t1:
@@ -912,7 +1076,7 @@ with t1:
     disp = df[["Month","Elec Emission","Fuel Emission","Water Emission","Waste Emission",
                "Total Emission","Renewable %","Grid EF"]].round(2).copy()
     disp.columns = ["Month","Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)",
-                    "Total CO₂ (kg)","Renewable %","Grid EF (kg/kWh)"]
+                    "Total CO₂ (kg)","Effective Renewable %","Grid EF (kg/kWh)"]
     tots = disp[["Electricity (kg)","Fuel (kg)","Water (kg)","Waste (kg)","Total CO₂ (kg)"]].sum()
     tr = pd.DataFrame([["─ TOTAL ─", tots["Electricity (kg)"], tots["Fuel (kg)"],
                          tots["Water (kg)"], tots["Waste (kg)"], tots["Total CO₂ (kg)"], "─", "─"]],
@@ -931,8 +1095,17 @@ with t1:
     k1.metric("🌍 Total CO₂", f"{df['Total Emission'].sum():,.1f} kg")
     k2.metric("📅 Monthly Avg", f"{df['Total Emission'].mean():,.1f} kg")
     k3.metric("📌 Peak Month", df.loc[df['Total Emission'].idxmax(), 'Month'])
-    k4.metric("☀️ Avg Renewable", f"{df['Renewable %'].mean():.1f}%")
+    k4.metric("☀️ Effective Renew Avg", f"{df['Renewable %'].mean():.1f}%")
     k5.metric("📡 Grid EF", f"{grid_ef} kg/kWh")
+
+    # Fuel breakdown KPIs
+    st.markdown("---")
+    st.markdown("##### ⛽ Fuel Emission Breakdown (All Months)")
+    fk1, fk2, fk3, fk4 = st.columns(4)
+    fk1.metric("🛢 Diesel (Generator)", f"{df['Em Diesel'].sum():,.1f} kg CO₂")
+    fk2.metric("🔥 LPG (Cooking)", f"{df['Em LPG'].sum():,.1f} kg CO₂")
+    fk3.metric("💨 Nat Gas (Heating)", f"{df['Em Nat Gas'].sum():,.1f} kg CO₂")
+    fk4.metric("⛽ Total Fuel", f"{df['Fuel Emission'].sum():,.1f} kg CO₂")
 
 with t2:
     sel = st.selectbox("Select Month", df["Month"].tolist(), key="sel_month_detail")
@@ -941,7 +1114,7 @@ with t2:
     ca, cb, cc, cd = st.columns(4)
     for col_, label, icon, hint in [
         (ca, "Elec Emission",  "⚡ Electricity", f"Net {row['Net Elec (kWh)']:,.0f} kWh"),
-        (cb, "Fuel Emission",  "🔥 Fuel",         "Diesel + LPG + Gas"),
+        (cb, "Fuel Emission",  "🔥 Fuel",        "Diesel · LPG · Nat Gas"),
         (cc, "Water Emission", "💧 Water",        f"{row['Water (m³)']:,.0f} m³ supply"),
         (cd, "Waste Emission", "🗑️ Waste",        "7 categories"),
     ]:
@@ -957,9 +1130,42 @@ with t2:
         <div class="total-lbl" style="color:var(--green);margin-top:.3rem">kg CO₂e &nbsp;·&nbsp; {row['Total Emission']/1000:.3f} tCO₂e</div>
     </div>""", unsafe_allow_html=True)
 
-    if row["Renewables (kWh)"] > 0:
-        saved = row["Renewables (kWh)"] * grid_ef
-        st.success(f"☀️ Renewables avoided **{saved:,.1f} kg CO₂** this month ({row['Renewable %']:.1f}% offset at {grid_ef} kg/kWh).")
+    if row["Renewables Generated (kWh)"] > 0:
+        st.markdown(f"""<div class="renew-panel" style="margin-top:.8rem">
+          <div class="renew-panel-title">☀️ Renewable Accounting — {sel}</div>
+          <div class="renew-row"><span class="renew-lbl">Generated</span><span class="renew-val">{row['Renewables Generated (kWh)']:,.1f} kWh</span><span class="renew-note">raw</span></div>
+          <div class="renew-row"><span class="renew-lbl">After Time-Mismatch ({row['Time Mismatch Factor']*100:.0f}%)</span><span class="renew-val">{row['Renewables Generated (kWh)']*row['Time Mismatch Factor']:,.1f} kWh</span><span class="renew-note">effective</span></div>
+          <div class="renew-row"><span class="renew-lbl">Self-Consumed On-Site</span><span class="renew-val">{row['Renewables Self-Consumed (kWh)']:,.1f} kWh</span><span class="renew-note">direct offset</span></div>
+          <div class="renew-row"><span class="renew-lbl">Exported to Grid</span><span class="renew-val">{row['Renewables Grid Export (kWh)']:,.1f} kWh</span><span class="renew-note">50% credit applied</span></div>
+          <div class="renew-row"><span class="renew-lbl" style="color:#00e5a0">Effective Offset</span><span class="renew-val">{row['Renewable %']:.1f}%</span><span class="renew-note" style="color:#00e5a0">net grid: {row['Net Elec (kWh)']:,.1f} kWh</span></div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    # Fuel detail panel per month
+    st.markdown("##### ⛽ Fuel Emission Ledger")
+    st.markdown(f"""<div class="fuel-panel">
+      <div class="fuel-panel-title">⛽ Scope 1 Fuel Emissions — {sel}</div>
+      <div class="fuel-row">
+        <span class="fuel-lbl">🛢 Diesel · Generator / DG Set</span>
+        <span class="fuel-val">{row['Diesel (L)']:.1f} L × {fuel_ef['diesel']['ef']} kg/L</span>
+        <span class="fuel-em">{row['Em Diesel']:.2f} kg CO₂e</span>
+      </div>
+      <div class="fuel-row">
+        <span class="fuel-lbl">🔥 LPG · Cooking / Canteen</span>
+        <span class="fuel-val">{row['LPG (kg)']:.1f} kg × {fuel_ef['lpg']['ef']} kg/kg</span>
+        <span class="fuel-em">{row['Em LPG']:.2f} kg CO₂e</span>
+      </div>
+      <div class="fuel-row">
+        <span class="fuel-lbl">💨 Natural Gas · Heating / Boiler</span>
+        <span class="fuel-val">{row['Nat Gas (m³)']:.1f} m³ × {fuel_ef['natural_gas']['ef']} kg/m³</span>
+        <span class="fuel-em">{row['Em Nat Gas']:.2f} kg CO₂e</span>
+      </div>
+      <div class="fuel-row" style="border-top:1px solid rgba(255,179,71,.15);margin-top:.3rem;padding-top:.45rem">
+        <span class="fuel-lbl" style="color:#ffc04d;font-weight:600">Total Fuel</span>
+        <span class="fuel-ef">PPAC / IPCC AR6 / DEFRA 2023</span>
+        <span class="fuel-em" style="font-size:.95rem">{row['Fuel Emission']:.2f} kg CO₂e</span>
+      </div>
+    </div>""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown("##### 💧 Water Emission Ledger")
@@ -998,7 +1204,7 @@ with t2:
         st.dataframe(wdf, use_container_width=True, hide_index=True)
 
 with t3:
-    st.markdown("#### ⚡ Electricity Sub-Category Analysis")
+    st.markdown("#### ⚡ Electricity Sub-Category & ☀️ Renewable Analysis")
     ec1, ec2 = st.columns(2)
     with ec1:
         fig_e1 = go.Figure()
@@ -1022,17 +1228,84 @@ with t3:
         ))
         fig_e2.update_layout(**plo("Avg kWh Consumption Share"))
         st.plotly_chart(fig_e2, use_container_width=True)
+
     elec_tbl = df[["Month","HVAC (kWh)","Lighting (kWh)","Appliances (kWh)","Elevators (kWh)",
-                    "Total Grid (kWh)","Renewables (kWh)","Net Elec (kWh)","Elec Emission","Renewable %"]].round(2).copy()
-    elec_tbl.columns = ["Month","HVAC","Lighting","Appliances","Elevators",
-                         "Total Grid","Renewables","Net kWh","Net Emission (kg CO₂)","Renewable %"]
+                    "Total Grid (kWh)","Renewables Generated (kWh)","Renewables Self-Consumed (kWh)",
+                    "Renewables Grid Export (kWh)","Net Elec (kWh)","Elec Emission","Renewable %"]].round(2).copy()
+    elec_tbl.columns = ["Month","HVAC","Lighting","Appliances","Elevators","Total Grid",
+                         "Renew Gen","Self-Consumed","Grid Export","Net kWh","Net Emission (kg CO₂)","Eff. Renew %"]
     st.dataframe(elec_tbl, use_container_width=True, hide_index=True)
+
+    # Renewable generation vs self-consumption vs export chart
+    if df["Renewables Generated (kWh)"].sum() > 0:
+        st.markdown("---")
+        st.markdown("##### ☀️ Renewable Breakdown — Self-Consumption vs Grid Export")
+        rr1, rr2 = st.columns(2)
+        with rr1:
+            fig_r1 = go.Figure()
+            fig_r1.add_trace(go.Bar(x=df["Month"], y=df["Total Grid (kWh)"],
+                                    name="Total Grid Draw", marker_color="#ff5f5f", marker_line_width=0))
+            fig_r1.add_trace(go.Bar(x=df["Month"], y=df["Renewables Self-Consumed (kWh)"],
+                                    name="Self-Consumed", marker_color="#00e5a0", marker_line_width=0))
+            fig_r1.add_trace(go.Bar(x=df["Month"], y=df["Renewables Grid Export (kWh)"],
+                                    name="Grid Export", marker_color="#00b37a", marker_line_width=0))
+            fig_r1.update_layout(**plo("Grid Draw vs Renewable Split (kWh)"),
+                                  barmode="group", yaxis_title="kWh")
+            st.plotly_chart(fig_r1, use_container_width=True)
+        with rr2:
+            fig_r2 = go.Figure()
+            fig_r2.add_trace(go.Scatter(
+                x=df["Month"], y=df["Renewable %"], mode="lines+markers",
+                line=dict(color="#00e5a0", width=2.5),
+                marker=dict(size=7, color="#00e5a0", line=dict(color="#060a0e", width=2)),
+                fill="tozeroy", fillcolor="rgba(0,229,160,.07)", name="Eff. Renew %"
+            ))
+            fig_r2.update_layout(**plo("Effective Renewable Offset % (after mismatch + export)"),
+                                  yaxis_title="%", yaxis_range=[0, 100])
+            st.plotly_chart(fig_r2, use_container_width=True)
+
     avg_hvac_pct = (df["Em HVAC"].sum() / df["Elec Emission"].sum() * 100) if df["Elec Emission"].sum() > 0 else 0
     if avg_hvac_pct > 45:
         st.markdown(f"""<div class="tip danger" style="margin-top:.8rem">
-            🌡️ <b>HVAC is consuming {avg_hvac_pct:.0f}% of electricity emissions</b> — above recommended 35-40%.
+            🌡️ <b>HVAC is consuming {avg_hvac_pct:.0f}% of electricity emissions</b> — above recommended 35–40%.
             Audit chiller performance (target COP ≥ 5.0), implement BMS setback schedules, improve building envelope insulation.
         </div>""", unsafe_allow_html=True)
+
+    # Fuel breakdown chart — separated by type
+    st.markdown("---")
+    st.markdown("##### ⛽ Fuel Emissions — Diesel vs LPG vs Natural Gas")
+    ff1, ff2 = st.columns(2)
+    with ff1:
+        fig_f1 = go.Figure()
+        fig_f1.add_trace(go.Bar(x=df["Month"], y=df["Em Diesel"],
+                                name="🛢 Diesel (Generator)", marker_color="#ff9f43", marker_line_width=0))
+        fig_f1.add_trace(go.Bar(x=df["Month"], y=df["Em LPG"],
+                                name="🔥 LPG (Cooking)", marker_color="#ffc04d", marker_line_width=0))
+        fig_f1.add_trace(go.Bar(x=df["Month"], y=df["Em Nat Gas"],
+                                name="💨 Nat Gas (Heating)", marker_color="#ffdd77", marker_line_width=0))
+        fig_f1.update_layout(**plo("Fuel Emissions by Type (kg CO₂e)"),
+                              barmode="stack", yaxis_title="kg CO₂e")
+        st.plotly_chart(fig_f1, use_container_width=True)
+    with ff2:
+        total_diesel_em = df["Em Diesel"].sum()
+        total_lpg_em    = df["Em LPG"].sum()
+        total_natgas_em = df["Em Nat Gas"].sum()
+        if total_diesel_em + total_lpg_em + total_natgas_em > 0:
+            fig_f2 = go.Figure(go.Pie(
+                labels=["Diesel (Generator)", "LPG (Cooking)", "Natural Gas (Heating)"],
+                values=[total_diesel_em, total_lpg_em, total_natgas_em], hole=0.58,
+                marker=dict(colors=["#ff9f43","#ffc04d","#ffdd77"],
+                            line=dict(color="#0b1118", width=2)),
+                textfont=dict(family="JetBrains Mono", color="#c8daea", size=10),
+            ))
+            fig_f2.update_layout(**plo("Fuel Emission Share by Type (Total)"))
+            st.plotly_chart(fig_f2, use_container_width=True)
+        else:
+            st.info("No fuel consumption recorded yet.")
+
+    fuel_tbl = df[["Month","Diesel (L)","Em Diesel","LPG (kg)","Em LPG","Nat Gas (m³)","Em Nat Gas","Fuel Emission"]].round(3).copy()
+    fuel_tbl.columns = ["Month","Diesel (L)","Diesel CO₂ (kg)","LPG (kg)","LPG CO₂ (kg)","Nat Gas (m³)","Nat Gas CO₂ (kg)","Total Fuel CO₂ (kg)"]
+    st.dataframe(fuel_tbl, use_container_width=True, hide_index=True)
 
 with t4:
     st.markdown("#### 💧 Water Emissions — Full Lifecycle Analysis")
@@ -1117,8 +1390,8 @@ with t4:
         with ww2:
             wef_data = []
             for wtype in ["organic","paper","plastic","glass","metal","general","hazardous"]:
-                for method, ef in WASTE_EF_MATRIX.get(wtype,{}).items():
-                    wef_data.append({"Category": wtype, "Disposal": method.replace("_"," ").title(), "EF": ef})
+                for method, ef_val in WASTE_EF_MATRIX.get(wtype,{}).items():
+                    wef_data.append({"Category": wtype, "Disposal": method.replace("_"," ").title(), "EF": ef_val})
             wef_df = pd.DataFrame(wef_data)
             fig_ef = go.Figure()
             colors_map = {
@@ -1171,11 +1444,15 @@ with t5:
     ))
     fig3.update_layout(**plo("Total Monthly CO₂e Trend (kg)"), yaxis_title="kg CO₂e")
     st.plotly_chart(fig3, use_container_width=True)
-    if df["Renewables (kWh)"].sum() > 0:
+    if df["Renewables Generated (kWh)"].sum() > 0:
         fig4 = go.Figure()
-        fig4.add_trace(go.Bar(x=df["Month"], y=df["Total Grid (kWh)"], name="Grid Draw", marker_color="#ff5f5f"))
-        fig4.add_trace(go.Bar(x=df["Month"], y=df["Renewables (kWh)"], name="Renewable Gen", marker_color="#00e5a0"))
-        fig4.update_layout(**plo("Grid Draw vs Renewable Generation (kWh)"),
+        fig4.add_trace(go.Bar(x=df["Month"], y=df["Total Grid (kWh)"],
+                              name="Grid Draw", marker_color="#ff5f5f"))
+        fig4.add_trace(go.Bar(x=df["Month"], y=df["Renewables Self-Consumed (kWh)"],
+                              name="Self-Consumed", marker_color="#00e5a0"))
+        fig4.add_trace(go.Bar(x=df["Month"], y=df["Renewables Grid Export (kWh)"],
+                              name="Grid Export", marker_color="#00b37a"))
+        fig4.update_layout(**plo("Grid Draw vs Renewable Split (kWh)"),
                            barmode="group", yaxis_title="kWh")
         st.plotly_chart(fig4, use_container_width=True)
 
@@ -1195,19 +1472,64 @@ with t6:
             🌡️ <b>HVAC is {avg_hvac_pct:.0f}% of electricity emissions</b>.
             Upgrade to inverter chillers (COP ≥ 5.0), deploy BMS setback, improve envelope insulation. Target: cut cooling load 20–35%.
         </div>""", unsafe_allow_html=True)
-    if df["Renewable %"].mean() < 10:
+
+    # Renewable recommendation — now accounts for mismatch
+    avg_renew_pct = df["Renewable %"].mean()
+    if avg_renew_pct < 10 and df["Renewables Generated (kWh)"].sum() == 0:
         any_tip = True
-        st.markdown(f"""<div class="tip info">
-            ☀️ <b>Renewable offset only {df['Renewable %'].mean():.1f}% avg</b>.
+        st.markdown(f"""<div class="tip renew">
+            ☀️ <b>No renewable generation detected.</b>
             At {grid_ef} kg/kWh, a 50 kWp rooftop system avoids ~{grid_ef*6000:.0f} kg CO₂/month.
+            Maximise self-consumption by scheduling high-load tasks (HVAC pre-cooling, EV charging) during peak solar hours.
         </div>""", unsafe_allow_html=True)
+    elif avg_renew_pct > 0:
+        avg_tmm = df["Time Mismatch Factor"].mean() * 100
+        avg_scr = df["Self Consumption Rate"].mean() * 100
+        if avg_scr < 60:
+            any_tip = True
+            st.markdown(f"""<div class="tip renew">
+                ☀️ <b>Low self-consumption rate ({avg_scr:.0f}% avg).</b>
+                Most generated energy is being exported. Consider battery storage (BESS) to capture surplus and
+                shift it to evening peak loads — can raise self-consumption to 80–90%.
+            </div>""", unsafe_allow_html=True)
+        if avg_tmm < 75:
+            any_tip = True
+            st.markdown(f"""<div class="tip info">
+                ⏱ <b>Generation–usage time mismatch at {avg_tmm:.0f}%.</b>
+                Significant generation is occurring when the building doesn't need it.
+                Use smart BMS to pre-cool or pre-heat during peak solar windows to improve temporal alignment.
+            </div>""", unsafe_allow_html=True)
+
+    # Fuel recommendations — separated by type
+    if df["Em Diesel"].sum() > 0:
+        any_tip = True
+        st.markdown(f"""<div class="tip fuel">
+            🛢 <b>Diesel Generator emissions: {df['Em Diesel'].sum():,.1f} kg CO₂ total.</b>
+            EF = {fuel_ef['diesel']['ef']} kg/L. Replace DG sets with grid-tied UPS + Li-ion battery backup.
+            Even a partial grid upgrade reduces diesel runtime by 60–80%.
+        </div>""", unsafe_allow_html=True)
+    if df["Em LPG"].sum() > 0:
+        any_tip = True
+        st.markdown(f"""<div class="tip fuel">
+            🔥 <b>LPG (Canteen/Cooking) emissions: {df['Em LPG'].sum():,.1f} kg CO₂ total.</b>
+            EF = {fuel_ef['lpg']['ef']} kg/kg. Switch to induction cooking — eliminates Scope 1 combustion
+            and reduces kitchen heat load by 30–40%.
+        </div>""", unsafe_allow_html=True)
+    if df["Em Nat Gas"].sum() > 0:
+        any_tip = True
+        st.markdown(f"""<div class="tip fuel">
+            💨 <b>Natural Gas (Heating/Boiler) emissions: {df['Em Nat Gas'].sum():,.1f} kg CO₂ total.</b>
+            EF = {fuel_ef['natural_gas']['ef']} kg/m³. Replace gas boilers with heat pumps (COP 3–4).
+            At current grid EF this typically cuts heating emissions 50–70%.
+        </div>""", unsafe_allow_html=True)
+
     avg_water_em = df["Water Emission"].mean()
     if avg_water_em > 50:
         any_tip = True
         st.markdown(f"""<div class="tip water">
-            💧 <b>Water emissions average {avg_water_em:.1f} kg CO₂e/month</b> (incl. supply, pumping, wastewater treatment, CH₄ + N₂O).
+            💧 <b>Water emissions average {avg_water_em:.1f} kg CO₂e/month</b>.
             Water-efficient fixtures (4-star WELS) reduce consumption 30–40%.
-            Greywater recycling can reduce wastewater return volume, cutting WW treatment emissions by 20–50%.
+            Greywater recycling can cut WW treatment emissions by 20–50%.
         </div>""", unsafe_allow_html=True)
     ch4_em = df["Water CH4 Emission"].mean()
     if ch4_em > 0.01:
@@ -1222,7 +1544,7 @@ with t6:
         any_tip = True
         st.markdown(f"""<div class="tip waste">
             🧴 <b>Plastic waste: {avg_plastic:.0f} kg/month avg</b>.
-            EF varies dramatically: recycling (0.043) vs incineration (2.948 kg CO₂e/kg) — <b>68× difference</b>.
+            Recycling EF (0.043) vs incineration (2.948 kg CO₂e/kg) — <b>68× difference</b>.
         </div>""", unsafe_allow_html=True)
     organic_em = df["Em Waste organic"].sum() if "Em Waste organic" in df.columns else 0
     if organic_em > 0:
@@ -1231,12 +1553,6 @@ with t6:
         st.markdown(f"""<div class="tip waste">
             🥦 <b>Organic waste: {avg_org:.0f} kg/month avg</b>.
             Landfill EF (0.587) is 10× higher than composting (0.055) and 29× higher than anaerobic digestion (0.020).
-        </div>""", unsafe_allow_html=True)
-    if df["Fuel Emission"].mean() > 100:
-        any_tip = True
-        st.markdown(f"""<div class="tip">
-            🔥 <b>Fuel emissions avg {df['Fuel Emission'].mean():,.0f} kg CO₂/month</b>.
-            Replace diesel gensets with grid-tied UPS + Li-ion backup. LPG boilers → heat pump: 60–70% reduction.
         </div>""", unsafe_allow_html=True)
     if not any_tip:
         st.markdown(f"""<div class="tip good">
@@ -1251,71 +1567,34 @@ with t6:
     b3.metric("LEED Gold Reference", "< 1,200 kg/floor")
     b4.metric("Net-Zero Target", "< 500 kg/floor")
 
-# ─── Footer ───────────────────────────────────────────────────────────────────
+# ─── Normalization & Uncertainty ─────────────────────────────────────────────
 st.divider()
-st.caption(
-    f"🌱 Building Carbon Tracker · 📍 {state_country} · Grid EF: {grid_ef} kg CO₂/kWh · "
-    "Water EI: EPRI/IWA · Waste: IPCC 2006/DEFRA 2023/GHG Protocol · "
-    "Sources: India CEA 2022-23 · IEA 2023 · IPCC AR6 · DEFRA 2023 · BEE India · PPAC · "
-    f"Session: {st.session_state.current_user}"
-)
 st.markdown("### 📊 Normalization & Assumptions")
 
 floor_area = st.number_input("Building Floor Area (m²)", min_value=1.0, value=1000.0, step=50.0)
 occupants  = st.number_input("Number of Occupants", min_value=1, value=100, step=5)
 
 st.markdown("#### ⚠️ Uncertainty Settings")
-
 uncertainty_level = st.selectbox(
     "Data Quality Level",
     ["High Accuracy (±5%)", "Moderate Accuracy (±10%)", "Low Accuracy (±20%)"]
 )
-
 UNCERTAINTY_MAP = {
     "High Accuracy (±5%)": 0.05,
     "Moderate Accuracy (±10%)": 0.10,
     "Low Accuracy (±20%)": 0.20
 }
-
 uncertainty_factor = UNCERTAINTY_MAP[uncertainty_level]
 
-
-co2_per_m2 = em_total / floor_area if floor_area > 0 else 0
-co2_per_occupant = em_total / occupants if occupants > 0 else 0
-
-lower_bound = em_total * (1 - uncertainty_factor)
-upper_bound = em_total * (1 + uncertainty_factor)
-
-monthly_data.append({
-    "CO2 per m2": co2_per_m2,
-    "CO2 per occupant": co2_per_occupant,
-    "Emission Lower Bound": lower_bound,
-    "Emission Upper Bound": upper_bound,
-    "Uncertainty %": uncertainty_factor * 100,
-})
-
-
 st.markdown("### 📊 Normalized Performance Metrics")
-
 n1, n2 = st.columns(2)
-
-n1.metric(
-    "🏢 CO₂ per m²",
-    f"{(df['Total Emission'].sum() / floor_area):.2f} kg/m²"
-)
-
-n2.metric(
-    "👥 CO₂ per Occupant",
-    f"{(df['Total Emission'].sum() / occupants):.2f} kg/person"
-)
-
+n1.metric("🏢 CO₂ per m²",       f"{(df['Total Emission'].sum() / floor_area):.2f} kg/m²")
+n2.metric("👥 CO₂ per Occupant", f"{(df['Total Emission'].sum() / occupants):.2f} kg/person")
 
 st.markdown("### 📉 Uncertainty Analysis")
-
 total_em = df["Total Emission"].sum()
-low = total_em * (1 - uncertainty_factor)
+low  = total_em * (1 - uncertainty_factor)
 high = total_em * (1 + uncertainty_factor)
-
 st.markdown(f"""
 <div class="card">
   <div class="card-lbl">UNCERTAINTY RANGE</div>
@@ -1324,21 +1603,28 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-
 st.markdown("### 🧠 Key Assumptions")
-
 st.markdown(f"""
 <div class="tip info">
 • Grid emission factor assumed constant at <b>{grid_ef} kg CO₂/kWh</b><br>
-• Water energy intensity based on regional averages<br>
-• Waste factors from IPCC / DEFRA datasets<br>
-• Fuel combustion assumed complete<br>
-• Occupancy fixed at <b>{occupants}</b><br>
-• Floor area fixed at <b>{floor_area} m²</b><br>
+• Renewable self-consumption rate and time-mismatch factor entered per month<br>
+• Grid export credited at 50% of full grid EF (off-peak displacement assumption)<br>
+• Diesel EF {fuel_ef['diesel']['ef']} kg/L — generator/DG-set use (PPAC / IPCC AR6)<br>
+• LPG EF {fuel_ef['lpg']['ef']} kg/kg — cooking/canteen use (IPCC AR6)<br>
+• Natural Gas EF {fuel_ef['natural_gas']['ef']} kg/m³ — heating/boiler use (DEFRA 2023)<br>
+• Water energy intensity based on regional averages (EPRI / IWA)<br>
+• Waste factors from IPCC 2006 / DEFRA 2023 datasets<br>
+• Occupancy fixed at <b>{occupants}</b> &nbsp;·&nbsp; Floor area fixed at <b>{floor_area} m²</b><br>
 • Uniform uncertainty applied: ±{uncertainty_factor*100:.0f}%
 </div>
 """, unsafe_allow_html=True)
 
-
-disp["CO₂ per m²"] = (disp["Total CO₂ (kg)"] / floor_area).round(2)
-disp["CO₂ per occupant"] = (disp["Total CO₂ (kg)"] / occupants).round(2)
+# ─── Footer ───────────────────────────────────────────────────────────────────
+st.divider()
+st.caption(
+    f"🌱 Building Carbon Tracker · 📍 {state_country} · Grid EF: {grid_ef} kg CO₂/kWh · "
+    "Water EI: EPRI/IWA · Waste: IPCC 2006/DEFRA 2023/GHG Protocol · "
+    "Fuel EFs: PPAC India · IPCC AR6 · DEFRA 2023 · "
+    "Renewable: self-consumption + export accounting · "
+    f"Session: {st.session_state.current_user}"
+)
